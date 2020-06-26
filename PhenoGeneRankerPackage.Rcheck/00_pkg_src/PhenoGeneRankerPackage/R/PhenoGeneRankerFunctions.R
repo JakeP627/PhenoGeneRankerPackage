@@ -652,6 +652,7 @@ get.connectivity <- function(NetworkDF, gene_pool_nodes_sorted, cult_pool_nodes_
   return(list(gene=GeneConnectivity,cult=CultConnectivity))
 }
 
+
 get.WalkMatrixID <- function(filesDF){
   WM_DF <-  read.table(filesDF$file_name[filesDF$layer_type=="WM_DF"], header=TRUE, sep="\t", stringsAsFactors = FALSE)
   LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "cult", "bipartite")]

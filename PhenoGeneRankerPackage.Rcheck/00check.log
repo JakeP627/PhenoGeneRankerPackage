@@ -1,0 +1,251 @@
+* using log directory 'C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRankerPackage.Rcheck'
+* using R version 3.6.3 (2020-02-29)
+* using platform: x86_64-w64-mingw32 (64-bit)
+* using session charset: ISO8859-1
+* using options '--no-manual --as-cran'
+* checking for file 'PhenoGeneRankerPackage/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'PhenoGeneRankerPackage' version '0.99.0'
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking serialization versions ... OK
+* checking whether package 'PhenoGeneRankerPackage' can be installed ... WARNING
+Found the following significant warnings:
+  Note: possible error in 'colSums(SupraAdjacencyMatrixCult, ': unused argument (sparseResult = FALSE) 
+  Note: possible error in 'colSums(SupraBipartiteMatrix, ': unused argument (sparseResult = FALSE) 
+  Note: possible error in 'colSums(SupraAdjacencyMatrix, ': unused argument (sparseResult = FALSE) 
+  Note: possible error in 'rowSums(SupraBipartiteMatrix, ': unused argument (sparseResult = FALSE) 
+See 'C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRankerPackage.Rcheck/00install.out' for details.
+Information on the location(s) of code generating the 'Note's can be
+obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
+to 'yes'.
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+Random_Walk_Restarts: no visible binding for global variable
+  'GeneSeeds'
+Random_Walk_Restarts: no visible binding for global variable
+  'CultSeeds'
+Random_Walk_Restarts: no visible binding for global variable
+  'Parameters'
+Random_Walk_Restarts: no visible binding for global variable 'LG'
+Random_Walk_Restarts: no visible binding for global variable 'LC'
+Random_Walk_Restarts: no visible global function definition for
+  'Matrix'
+Random_Walk_Restarts_Batch: no visible global function definition for
+  'makeCluster'
+Random_Walk_Restarts_Batch: no visible global function definition for
+  'registerDoParallel'
+Random_Walk_Restarts_Batch: no visible global function definition for
+  '%dopar%'
+Random_Walk_Restarts_Batch: no visible global function definition for
+  'foreach'
+Random_Walk_Restarts_Batch: no visible binding for global variable 'i'
+Random_Walk_Restarts_Batch: no visible global function definition for
+  'stopCluster'
+add.missing.nodes.to.graph: no visible global function definition for
+  'V'
+add.missing.nodes.to.graph: no visible global function definition for
+  'add_vertices'
+calculate.p_values: no visible global function definition for
+  'makeCluster'
+calculate.p_values: no visible global function definition for
+  'registerDoParallel'
+calculate.p_values: no visible global function definition for '%dopar%'
+calculate.p_values: no visible global function definition for 'foreach'
+calculate.p_values: no visible global function definition for
+  'stopCluster'
+calculate.p_values: no visible global function definition for
+  'bind_cols'
+calculate.p_values: no visible global function definition for ':='
+calculate.p_values: no visible binding for global variable 'P'
+create.WalkMatrix: no visible binding for '<<-' assignment to
+  'network_range'
+create.WalkMatrix: no visible global function definition for 'saveit'
+create.WalkMatrix: no visible global function definition for
+  'registerDoSEQ'
+create.bipartite.matrix: no visible global function definition for
+  'graph.data.frame'
+create.bipartite.matrix: no visible global function definition for
+  'as_edgelist'
+create.bipartite.matrix: no visible global function definition for
+  'edge_attr'
+create.bipartite.matrix: no visible global function definition for
+  'Matrix'
+create.bipartite.matrix: no visible global function definition for
+  'makeCluster'
+create.bipartite.matrix: no visible global function definition for
+  'registerDoParallel'
+create.bipartite.matrix: no visible global function definition for
+  '%dopar%'
+create.bipartite.matrix: no visible global function definition for
+  'foreach'
+create.bipartite.matrix: no visible global function definition for
+  'stopCluster'
+create.cult.transition.multiplex.network: no visible global function
+  definition for 'Matrix'
+create.cult.transition.multiplex.network: possible error in
+  colSums(SupraAdjacencyMatrixCult, na.rm = FALSE, dims = 1,
+  sparseResult = FALSE): unused argument (sparseResult = FALSE)
+create.cult.transition.multiplex.network: possible error in
+  colSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.cult.transition.multiplex.network: no visible global function
+  definition for 'makeCluster'
+create.cult.transition.multiplex.network: no visible global function
+  definition for 'registerDoParallel'
+create.cult.transition.multiplex.network: no visible global function
+  definition for '%dopar%'
+create.cult.transition.multiplex.network: no visible global function
+  definition for 'foreach'
+create.cult.transition.multiplex.network: no visible global function
+  definition for 'stopCluster'
+create.gene.transition.multiplex.network: no visible global function
+  definition for 'Matrix'
+create.gene.transition.multiplex.network: possible error in
+  colSums(SupraAdjacencyMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.gene.transition.multiplex.network: possible error in
+  rowSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.gene.transition.multiplex.network: no visible global function
+  definition for 'makeCluster'
+create.gene.transition.multiplex.network: no visible global function
+  definition for 'registerDoParallel'
+create.gene.transition.multiplex.network: no visible global function
+  definition for '%dopar%'
+create.gene.transition.multiplex.network: no visible global function
+  definition for 'foreach'
+create.gene.transition.multiplex.network: no visible global function
+  definition for 'stopCluster'
+create.supraadjacency.matrix: no visible global function definition for
+  'Diagonal'
+create.supraadjacency.matrix: no visible global function definition for
+  'getDoParWorkers'
+create.supraadjacency.matrix: no visible global function definition for
+  'registerDoSEQ'
+create.supraadjacency.matrix: no visible global function definition for
+  'makeCluster'
+create.supraadjacency.matrix: no visible global function definition for
+  'registerDoParallel'
+create.supraadjacency.matrix: no visible global function definition for
+  '%dopar%'
+create.supraadjacency.matrix: no visible global function definition for
+  'foreach'
+create.supraadjacency.matrix: no visible global function definition for
+  'Matrix'
+create.supraadjacency.matrix: no visible global function definition for
+  'as_adjacency_matrix'
+create.supraadjacency.matrix: no visible binding for global variable
+  'i'
+create.supraadjacency.matrix: no visible global function definition for
+  'stopCluster'
+create.suprabipartite.matrix: no visible global function definition for
+  'Matrix'
+create.transition.matrix: no visible global function definition for
+  'Matrix'
+create.transition.matrix: possible error in
+  rowSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.matrix: possible error in
+  colSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.matrix.cult_gene: no visible global function
+  definition for 'Matrix'
+create.transition.matrix.cult_gene: possible error in
+  rowSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.matrix.gene_cult: no visible global function
+  definition for 'Matrix'
+create.transition.matrix.gene_cult: possible error in
+  colSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.multiplex.network: no visible global function
+  definition for 'Matrix'
+create.transition.multiplex.network: possible error in
+  colSums(SupraAdjacencyMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.multiplex.network: possible error in
+  rowSums(SupraBipartiteMatrix, na.rm = FALSE, dims = 1, sparseResult =
+  FALSE): unused argument (sparseResult = FALSE)
+create.transition.multiplex.network: no visible global function
+  definition for 'makeCluster'
+create.transition.multiplex.network: no visible global function
+  definition for 'registerDoParallel'
+create.transition.multiplex.network: no visible global function
+  definition for '%dopar%'
+create.transition.multiplex.network: no visible global function
+  definition for 'foreach'
+create.transition.multiplex.network: no visible global function
+  definition for 'stopCluster'
+generate.random.seeds: no visible global function definition for '%>%'
+generate.random.seeds: no visible global function definition for
+  'group_by'
+generate.random.seeds: no visible binding for global variable 'Group'
+generate.random.seeds: no visible global function definition for
+  'sample_n'
+get.connectivity: no visible global function definition for 'bind_rows'
+get.connectivity: no visible global function definition for
+  'graph.data.frame'
+get.connectivity: no visible global function definition for
+  'as_adjacency_matrix'
+read.network.layers: no visible global function definition for
+  'graph.data.frame'
+Undefined global functions or variables:
+  %>% %dopar% := CultSeeds Diagonal GeneSeeds Group LC LG Matrix P
+  Parameters V add_vertices as_adjacency_matrix as_edgelist bind_cols
+  bind_rows edge_attr foreach getDoParWorkers graph.data.frame group_by
+  i makeCluster registerDoParallel registerDoSEQ sample_n saveit
+  stopCluster
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... WARNING
+Functions or methods with usage in documentation object 'hello' but not in code:
+  'hello'
+
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... ERROR
+Running examples in 'PhenoGeneRankerPackage-Ex.R' failed
+The error most likely occurred in:
+
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: hello
+> ### Title: Hello, World!
+> ### Aliases: hello
+> 
+> ### ** Examples
+> 
+> hello()
+Error in hello() : could not find function "hello"
+Execution halted
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 1 ERROR, 2 WARNINGs, 1 NOTE
