@@ -96,7 +96,7 @@ add.missing.nodes.to.graph <- function(g, type, pool_nodes_sorted){
   return(g)
 }
 
-#' Title
+#' This method allows you to import all the parameters that you need for use with ease of use for the other methods.
 #'
 #' @param r This is the global restart probability. It has a range of 0 to 1.
 #' @param delta This is the probability of jumping between layers. It has a range of 0 to 1.
@@ -678,11 +678,11 @@ get.WalkMatrixID <- function(filesDF){
 #' combining the transition and transition multiplex networks.
 #' That network then gets saved to an RDA file
 #'
-#' @param inputFileName name of the txt file that contains the gene and cultivar data
-#' @param numCores number of cores used for parallel processing
-#'     - recommended to use detectCores() method from the parallel package
+#' @param inputFileName name of the txt file that contains the gene and cultivar data.
+#' @param numCores number of cores used for parallel processing.
+#'     - recommended to use detectCores() method from the parallel package.
 #'
-#' @return ID of WalkMatrix File
+#' @return ID of WalkMatrix File, the RDA file is saved to your files.
 #' @export
 #'
 #' @examples
@@ -805,138 +805,6 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
   return(WM_ID[["ID"]])
 }
 
-createWalkMatrixUpdated <- function(inputFileName, params, numCores){
-  network_range <<- c(0.001, 1)
-  global_t1 <- Sys.time()
-  t1 <- Sys.time()
-  Settings <- read.settings(inputFileName)
-  Parameters <- params
-  FilesDF <- Settings$FilesDF
-  LG <- Settings$LG
-  LC <- Settings$LC
-
-
-  cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "cult", "bipartite")], collapse = ","), "\n")
-  FullNet <- read.network.layers(FilesDF, Parameters, Settings$Layers)
-  Layers <- FullNet$Layers
-  gene_pool_nodes_sorted <- FullNet$gene_pool_nodes_sorted
-  cult_pool_nodes_sorted <- FullNet$cult_pool_nodes_sorted
-  FullNet <- FullNet$NetworkLayers
-
-  N=length(gene_pool_nodes_sorted)
-  M <- length(cult_pool_nodes_sorted)
-  cat("Time to Initialize : ", format(Sys.time()-t1), "\n")
-
-
-  # CREATE SUPRAADJACENCYMATRIX FOR GENES
-  t1 <- Sys.time()
-  SupraAdjacencyMatrix <- create.supraadjacency.matrix(FullNet, "gene", N, LG, Parameters$zeta, TRUE)
-  cat("Time to create SupraAdjacencyMatrix for Genes : ", format(Sys.time()-t1), "\n")
-
-
-  # CREATE SUPRAADJACENCYMATRIX FOR CULTIVARS
-  t1 <- Sys.time()
-  SupraAdjacencyMatrixCult <- create.supraadjacency.matrix(FullNet, "cult", M, LC, Parameters$delta, TRUE)
-  cat("Time to create SupraAdjacencyMatrix for Cultivars : ", format(Sys.time()-t1), "\n")
-
-  # CREATE THE BIPARTITE GRAPH
-  t1 <- Sys.time()
-  BipartiteMatrix <- create.bipartite.matrix(FullNet, N, M, gene_pool_nodes_sorted, cult_pool_nodes_sorted, numCores, Parameters$weighted)
-  cat("Time to create BipartiteMatrix : ", format(Sys.time()-t1), "\n")
-
-
-  # CREATE SUPRABIPARTITEGRAPH
-
-  ## We expand the biparite graph to fit the multiplex dimensions.
-  ## The biparti matrix has now NL x MK
-  ## The genes in all the layers have to point to the cultivars in all layers
-
-  t1 <- Sys.time()
-  SupraBipartiteMatrix <- create.suprabipartite.matrix(BipartiteMatrix, N, M, LG, LC)
-  cat("Time to create SupraBipartiteMatrix : ", format(Sys.time()-t1), "\n")
-
-
-  t1 <- Sys.time()
-  #Transition_Protein_Cultivar <- create.transition.matrix.gene_cult(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Protein_Cultivar <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, FALSE)
-  cat("Time to create Transition Matrix for Genes-Cultivars : ", format(Sys.time()-t1), "\n")
-
-  t1 <- Sys.time()
-  #Transition_Cultivar_Protein <- create.transition.matrix.cult_gene(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Cultivar_Protein <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, TRUE)
-  cat("Time to create Transition Matrix for Cultivars-Genes : ", format(Sys.time()-t1), "\n")
-
-
-  t1 <- Sys.time()
-  Gene_Transition_Multiplex_Network <- create.gene.transition.multiplex.network(SupraAdjacencyMatrix,
-                                                                                SupraBipartiteMatrix,
-                                                                                N, LG, Parameters$lambda, numCores)
-  #Gene_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrix,
-  #                                                                             SupraBipartiteMatrix,
-  #                                                                            N, LG, Parameters$lambda, numCores)
-  cat("Time to create Gene Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
-
-  #printSpMatrix2(Gene_Transition_Multiplex_Network, col.names = TRUE)
-
-
-  # CREATE TRANSITION MULTIPLEX NETWORK FOR CULTIVARS
-  t1 <- Sys.time()
-  Cult_Transition_Multiplex_Network <- create.cult.transition.multiplex.network(SupraAdjacencyMatrixCult,
-                                                                                SupraBipartiteMatrix,
-                                                                                M, LC, Parameters$lambda, numCores)
-  #Cult_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrixCult,
-  #                                                                            SupraBipartiteMatrix,
-  #                                                                           M, LC, Parameters$lambda, numCores)
-  cat("Time to create Cult Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
-
-
-  #printSpMatrix2(round(Cult_Transition_Multiplex_Network, 3), col.names = TRUE)
-  #colSums(Cult_Transition_Multiplex_Network)
-
-  # CREATE FINAL TRANSITION MULTIPLEX HETERO MATRIX
-
-  t1 <- Sys.time()
-
-  ### We generate the global transiction matrix and we return it.
-  Multiplex_Heterogeneous_Matrix <- rbind(cbind(Gene_Transition_Multiplex_Network, Transition_Protein_Cultivar),
-                                          cbind(Transition_Cultivar_Protein, Cult_Transition_Multiplex_Network))
-
-  cat("Time to create Final Multiplex Heterogeneous Network : ", format(Sys.time()-t1), "\n")
-
-
-  #Extract candidate genes for further Random Walks on this WM
-  GeneCultDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
-  CandidateGenes <- unique(GeneCultDF$from)
-  Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, cult_pool_nodes_sorted)
-  #WM_ID <- get.WalkMatrixID(FilesDF)
-
-  WM <- list("WM"=Multiplex_Heterogeneous_Matrix,Connectivity[["gene"]],"GeneConnectivity"=Connectivity[["cult"]],
-             "gene_pool_nodes_sorted"=gene_pool_nodes_sorted, "cult_pool_nodes_sorted"=cult_pool_nodes_sorted,
-             "CandidateGenes"=CandidateGenes)
-  # WM <-list(WM=Multiplex_Heterogeneous_Matrix,
-  #           GeneConnectivity=Connectivity[["gene"]], CultConnectivity=Connectivity[["cult"]],
-  #           LG=LG, LC=LC, M=M, N=N, Parameters=Parameters,
-  #           gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-  #           cult_pool_nodes_sorted=cult_pool_nodes_sorted,
-  #           CandidateGenes=CandidateGenes, WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]])
-
-  #names(WM) <- c("WM", "GeneConnectivity", "CultConnectivity", "LG", "LC", "M", "N", "Parameters",
-                 #"gene_pool_nodes_sorted", "cult_pool_nodes_sorted", "CandidateGenes", "WM_ID", "WM_Layers")
-  # saveit(WM=Multiplex_Heterogeneous_Matrix,
-  #        GeneConnectivity=Connectivity[["gene"]], CultConnectivity=Connectivity[["cult"]],
-  #        LG=LG, LC=LC, M=M, N=N, Parameters=Parameters,
-  #        gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-  #        cult_pool_nodes_sorted=cult_pool_nodes_sorted,
-  #        CandidateGenes=CandidateGenes,
-  #        WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]],
-  #        file = paste0("WM_", WM_ID[["ID"]], ".rda"))
-
-  cat("Time to Start-Finish : ", format(Sys.time()-global_t1), "\n")
-  # if there are still some paralllel workers stop and force sequential
-  registerDoSEQ()
-  #return(WM_ID[["ID"]])
-  return(WM)
-}
 assign.group.to.connectivityDF <- function(ConnectivityDF, no.groups){
   chunk.size <- ceiling(nrow(ConnectivityDF)/no.groups)
   groups <- rep(1:no.groups, each = chunk.size, length.out = nrow(ConnectivityDF))
@@ -971,8 +839,8 @@ generate.random.seeds <- function(Seeds, ConnectivityDF, S=1000, no.groups=10, r
 #'  3. Get the groups of SeedGenes
 #'  4. Random sample from genes from the same degree of genes
 #'
-#' @param output_dir
-#' @param WM_ID
+#' @param output_dir File directory to output the data.
+#' @param WM_ID Id of the walk matrix used.
 #' @param ResultID
 #' @param GeneSeeds
 #' @param GeneConnectivityDF
