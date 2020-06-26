@@ -10,7 +10,7 @@ Description: This package is a gene/disease prioritization tool that utilizes
     using random stratified sampling of genes based on their connectivity degree 
     in the network.
 License: Creative Commons Attribution 4.0 International License
-Imports: igraph, Matrix, foreach, doParallel, dplyr
+Imports: igraph, Matrix, foreach, doParallel, dplyr, rlang
 Suggests: knitr
 VignetteBuilder: knitr
 RoxygenNote: 7.1.0

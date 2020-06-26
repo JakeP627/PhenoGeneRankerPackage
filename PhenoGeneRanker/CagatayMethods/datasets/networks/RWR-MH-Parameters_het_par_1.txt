@@ -1,0 +1,8 @@
+Parameters file (Default values used in the article. Change just the numbers!)	Values
+1. Global Restart Probability (r):	0.7
+2. Inter-Layer Jump Probability (delta):	0.5
+3. Gene Layers Restart Probability - (PPI, PATH, COEX) (tau):	1,1,1
+4. Cultivar Layers Restart Probability - (Genotype, EL, LTSS) (phi):	1,1,1
+6. Inter Network Jump Probability (lambda):	0.5
+7. Networks Restart Probability (eta):	0.5
+8. Weighted-Unweighted (weighted):	1

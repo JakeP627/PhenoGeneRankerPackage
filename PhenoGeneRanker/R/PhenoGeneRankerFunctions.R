@@ -803,6 +803,10 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
   registerDoSEQ()
   return(WM_ID[["ID"]])
 }
+saveit <- function(..., file) {
+  x <- list(...)
+  save(list=names(x), file=file, envir=list2env(x))
+}
 
 assign.group.to.connectivityDF <- function(ConnectivityDF, no.groups){
   chunk.size <- ceiling(nrow(ConnectivityDF)/no.groups)

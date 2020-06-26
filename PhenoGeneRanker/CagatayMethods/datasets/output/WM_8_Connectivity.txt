@@ -1,0 +1,13 @@
+[1] "Summary of Degree Connectivity of Genes by Group:"
+# A tibble: 2 x 5
+  Group     n   min    max  mean
+  <int> <int> <dbl>  <dbl> <dbl>
+1     1  6589 4.34  743.   66.2 
+2     2  6589 0.001   4.34  1.12
+[1] "------"
+[1] "Summary of Degree Connectivity of Cultivars by Group:"
+# A tibble: 2 x 5
+  Group     n   min   max  mean
+  <int> <int> <dbl> <dbl> <dbl>
+1     1   180 229.   263.  243.
+2     2   180  98.3  228.  179.
