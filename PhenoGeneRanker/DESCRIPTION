@@ -1,11 +1,16 @@
-Package: PhenoGeneRanker
+Package: PhenoGeneRankerPackage
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
-Encoding: UTF-8
-LazyData: true
+Title: PhenoGeneRanker, gene and disease prioritization tool 
+Version: 0.99.0
+Author: Cagatay Dursun, Jake Petrie
+Maintainer: Jake Petrie <jacob.m.petrie@marquette.edu>
+Description: This package is a gene/disease prioritization tool that utilizes 
+    heterogeneous gene disease network. PhenoGeneRanker allows multi-layer gene
+    and disease networks. It also calculates empirical p-values of gene ranking
+    using random stratified sampling of genes based on their connectivity degree 
+    in the network.
+License: Creative Commons Attribution 4.0 International License
+Imports: igraph, Matrix, foreach, doParallel, dplyr
+Suggests: knitr
+VignetteBuilder: knitr
+RoxygenNote: 7.1.0
