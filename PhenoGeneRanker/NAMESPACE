@@ -2,3 +2,4 @@
 #export('createWalkMatrix')
 importFrom("stats", "median")
 importFrom("utils", "read.csv", "read.table", "write.table")
+
