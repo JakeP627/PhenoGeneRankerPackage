@@ -21,14 +21,15 @@ read.settings <- function(input.file){
 }
 read.network.layers <- function(filesDF, Parameters_File, Layers){
   # read the gene layer names
-  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "pheno", "bipartite")]
-
+  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "phenotype", "bipartite")]
+  #LayerNames <- filesDF$type[filesDF$type%in%c("gene", "phenotype", "bipartite")]
+  
   NetworkLayers <- vector("list",length(LayerNames))
 
   j <- 1
   for(i in LayerNames){
     NetworkLayers[[j]][["DF"]] <-  read.table(filesDF$file_name[filesDF$layer_name==i],
-                                              sep="\t", header=TRUE, colClasses = c("character", "character", "numeric")) #this is where the error is
+                                              sep="\t", header=TRUE, colClasses = c("character", "character", "numeric"))
     NetworkLayers[[j]][["type"]] <- filesDF$type[filesDF$layer_name==i]
 
     # if (NetworkLayers[[j]][["type"]] != "bipartite"){
@@ -38,9 +39,9 @@ read.network.layers <- function(filesDF, Parameters_File, Layers){
 
     NetworkLayers[[j]][["layer_type"]] <- filesDF$layer_type[filesDF$layer_name==i]
     NetworkLayers[[j]][["name"]] <- i
-    ind <- which(Layers[["layer_type"]]==NetworkLayers[[j]][["layer_type"]])
+    #ind <- which(Layers[["layer_type"]]==NetworkLayers[[j]][["layer_type"]])
     # count the # of layers into  Layers[["count"]]
-    Layers[["count"]][ind] <- Layers[["count"]][ind] + 1
+    #Layers[["count"]][ind] <- Layers[["count"]][ind] + 1
 
     j <- j+1
   }
@@ -785,21 +786,29 @@ createWalkMatrix <- function(inputFileName, params, numCores){
   GenePhenoDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
   CandidateGenes <- unique(GenePhenoDF$from)
   Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, pheno_pool_nodes_sorted)
-  WM_ID <- get.WalkMatrixID(FilesDF)
-
-  saveit(WM=Multiplex_Heterogeneous_Matrix,
-         GeneConnectivity=Connectivity[["gene"]], PhenoConnectivity=Connectivity[["pheno"]],
-         LG=LG, LP=LP, M=M, N=N, Parameters=Parameters,
-         gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-         pheno_pool_nodes_sorted=pheno_pool_nodes_sorted,
-         CandidateGenes=CandidateGenes,
-         WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]],
-         file = paste0("WM_", WM_ID[["ID"]], ".rda"))
+  #WM_ID <- get.WalkMatrixID(FilesDF)
+  WM <- list(WM = Multiplex_Heterogeneous_Matrix,
+                  genes = gene_pool_nodes_sorted,
+                  phenotypes = phenotype_pool_nodes_sorted,
+                  gene_connectivity = Connectivity[["gene"]],
+                  phenotype_connectivity = Connectivity[["phenotype"]],
+                  LG = LG,
+                  LP = LP,
+                  N = N,
+                  M = M)
+  # saveit(WM=Multiplex_Heterogeneous_Matrix,
+  #        GeneConnectivity=Connectivity[["gene"]], PhenoConnectivity=Connectivity[["pheno"]],
+  #        LG=LG, LP=LP, M=M, N=N, Parameters=Parameters,
+  #        gene_pool_nodes_sorted=gene_pool_nodes_sorted,
+  #        pheno_pool_nodes_sorted=pheno_pool_nodes_sorted,
+  #        CandidateGenes=CandidateGenes,
+  #        WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]],
+  #        file = paste0("WM_", WM_ID[["ID"]], ".rda"))
 
   cat("Time to Start-Finish : ", format(Sys.time()-global_t1), "\n")
   # if there are still some paralllel workers stop and force sequential
   registerDoSEQ()
-  return(WM_ID[["ID"]])
+  return(WM)
 }
 
 saveit <- function(..., file) {
@@ -939,7 +948,7 @@ createWalkMatrixUpdated <- function(inputFileName, params, numCores){
   #return(WM_ID[["ID"]])
   return(WM)
 }
->>>>>>> 9d2120388122d213b5227db47284cbd2ccf10772
+
 assign.group.to.connectivityDF <- function(ConnectivityDF, no.groups){
   chunk.size <- ceiling(nrow(ConnectivityDF)/no.groups)
   groups <- rep(1:no.groups, each = chunk.size, length.out = nrow(ConnectivityDF))

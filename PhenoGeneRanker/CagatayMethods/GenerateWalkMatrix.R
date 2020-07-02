@@ -40,7 +40,7 @@ phi <- c(1,1,1)
 myParams <- addParameters(.7,.5,.5,tau,phi,.5,.5,1,3,3)
 myParams
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
-myWM <- create.WalkMatrix(inputFile, myParams, numCores)
+myWM <- createWalkMatrix(inputFile, myParams, numCores)
 #myWM
 
 
