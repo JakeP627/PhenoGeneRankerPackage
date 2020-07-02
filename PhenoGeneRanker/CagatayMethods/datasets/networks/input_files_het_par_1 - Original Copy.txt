@@ -1,0 +1,9 @@
+type	layer_type	layer_name	file_name
+settings	WM_DF	Walk Matrix Mapping	WM_DF.txt
+gene	ppi	STRING	PPI_2019-04-22.txt
+gene	pwy	Reactome	Pwy_2019-04-22.txt
+gene	expr	GSE57895	CoExpressionNet_GSE57895_fltrd_0.1_shortest.txt
+cult	EL	EL	CultNetEL_2019-04-23.txt
+cult	LTSS	LTSS	CultNetLTSS_2019-04-23.txt
+cult	GT	GT	CultNetGT_2019-04-22.txt
+bipartite	gene_cult	GeneCult	GeneCultNet_2019-04-22.txt

@@ -11,12 +11,11 @@ read.settings <- function(input.file){
   #Parameters_File <- read.csv(files$file_name[files$layer_type=="parameters"], header=TRUE,sep="\t",dec=".",stringsAsFactors = FALSE)
 
   LG <- length(files$layer_name[files$type=="gene"])
-  LP <- length(files$layer_name[files$type=="pheno"])
+  LP <- length(files$layer_name[files$type=="phenotype"])
   #Parameters <- check.parameters(Parameters_File, LG, LP)
 
   output=list(
     FilesDF=files,
-
     LG=LG,
     LP=LP)
 }
@@ -561,9 +560,7 @@ create.pheno.transition.multiplex.network <- function(SupraAdjacencyMatrixPheno,
   stopCluster(cl)
   return(Transition_Multiplex_Network_Pheno)
 }
-rankScores<- function(numGene, numGeneLayers,numPheno, numPhenoLayers, geneSeeds, phenoSeeds, results){
-  rank_genes(numGene, numGeneLayers, results, geneSeeds)
-}
+
 rank_genes <- function(Number_Genes, Number_Layers,Results,Seeds){
   ## We sort the score to obtain the ranking of Genes and Phenotypes.
   genes_rank <- data.frame(Gene = character(length = Number_Genes), Score = 0)
@@ -608,7 +605,7 @@ geometric.mean <- function(Scores, L, N) {
 
   return(FinalScore)
 }
-Random_Walk_Restarts <- function(Walk_Matrix, r, Seeds_Score){
+randomWalkRestarts <- function(Walk_Matrix, r, Seeds_Score){
   ### We define the threshold and the number maximum of iterations for the randon walker.
   Seeds_Score <- get.seed.scores(GeneSeeds,PhenoSeeds, Parameters$eta, LG, LP, Parameters$tau/LG, Parameters$phi/LP)
   Threeshold <- 1e-10
@@ -686,7 +683,7 @@ get.WalkMatrixID <- function(filesDF){
 #' @export
 #'
 #' @examples
-create.WalkMatrix <- function(inputFileName, params, numCores){
+createWalkMatrix <- function(inputFileName, params, numCores){
   network_range <<- c(0.001, 1)
   global_t1 <- Sys.time()
   t1 <- Sys.time()
@@ -1047,7 +1044,7 @@ generate.random.seed.vector <- function(output_dir, WM_ID, GeneSeeds, GeneConnec
 #' @export
 #'
 #' @examples
-calculate.p_values <- function(RWGeneRanks, Rand_Seed_Gene_Rank, output_dir, no.cores=15){
+calculatePvalues <- function(RWGeneRanks, Rand_Seed_Gene_Rank, output_dir, no.cores=15){
   #t <- Sys.time()
   S <- ncol(Rand_Seed_Gene_Rank)/3
   cl <- makeCluster(no.cores)
@@ -1091,12 +1088,12 @@ calculate.p_values <- function(RWGeneRanks, Rand_Seed_Gene_Rank, output_dir, no.
   dfRanks
 }
 
-Random_Walk_Restarts_Batch <- function(Walk_Matrix, GeneSeedsList, PhenoSeedsList, N, LG, LP, eta, tau, phi, r, funcs, no.cores=4){
+randomWalkRestartsBatch <- function(Walk_Matrix, GeneSeedsList, PhenoSeedsList, N, LG, LP, eta, tau, phi, r, funcs, no.cores=4){
   # t <- Sys.time()
   cl <- makeCluster(no.cores)
   registerDoParallel(cl)
   seedsLength <- ifelse(length(GeneSeedsList)!=0, length(GeneSeedsList), length(PhenoSeedsList))
-  #funcs <- c('get.seed.scores', 'Random_Walk_Restarts', 'rank_genes')
+  #funcs <- c('get.seed.scores', 'randomWalkRestarts', 'rank_genes')
 
   Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.export=funcs,.packages=c('Matrix')) %dopar% {
     if (length(GeneSeedsList)!=0 && length(PhenoSeedsList)!=0){
@@ -1107,7 +1104,7 @@ Random_Walk_Restarts_Batch <- function(Walk_Matrix, GeneSeedsList, PhenoSeedsLis
       Seeds_Score <- get.seed.scores(vector(), PhenoSeedsList[[i]], eta, LG, LP, tau, phi )
     }
 
-    Rand_Seed_Res <- Random_Walk_Restarts(Walk_Matrix, r, Seeds_Score)
+    Rand_Seed_Res <- randomWalkRestarts(Walk_Matrix, r, Seeds_Score)
     Rand_Seed_Gene_Rank <- rank_genes(N, LG, Rand_Seed_Res, ifelse(length(GeneSeedsList)!=0, GeneSeedsList[[i]], vector()))
 
     return(Rand_Seed_Gene_Rank)
