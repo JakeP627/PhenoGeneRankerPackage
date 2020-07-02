@@ -72,7 +72,7 @@ Rand_Seed_Gene_Rank <- Random_Walk_Restarts_Batch(WM, RandomSeeds[["gene"]], Ran
 dfRank <- calculate.p_values(RWGeneRankDF, Rand_Seed_Gene_Rank, outputDir, num.cores)
 
 # categoraiz ethe results for  candidate genes
-dfRank <- categorize.ranked.genes(CandidateGenes, dfRank)
+#dfRank <- categorize.ranked.genes(CandidateGenes, dfRank)
 
 
 # cropped version will have gene, rank, type, p100 columns

@@ -1,7 +1,7 @@
 read.settings <- function(input.file){
 
   #Layers <- vector("list")
-  #Layers[["type"]] <- c("ppi", "pwy", "expr","cult")
+  #Layers[["type"]] <- c("ppi", "pwy", "expr","pheno")
   #Layers[["color"]] <- c("blue", "green", "red","darkorchid")
   #Layers[["count"]] <- c(rep(0, length(Layers[["type"]])))
 
@@ -11,18 +11,18 @@ read.settings <- function(input.file){
   #Parameters_File <- read.csv(files$file_name[files$layer_type=="parameters"], header=TRUE,sep="\t",dec=".",stringsAsFactors = FALSE)
 
   LG <- length(files$layer_name[files$type=="gene"])
-  LC <- length(files$layer_name[files$type=="cult"])
-  #Parameters <- check.parameters(Parameters_File, LG, LC)
+  LP <- length(files$layer_name[files$type=="pheno"])
+  #Parameters <- check.parameters(Parameters_File, LG, LP)
 
   output=list(
     FilesDF=files,
 
     LG=LG,
-    LC=LC)
+    LP=LP)
 }
 read.network.layers <- function(filesDF, Parameters_File, Layers){
   # read the gene layer names
-  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "cult", "bipartite")]
+  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "pheno", "bipartite")]
 
   NetworkLayers <- vector("list",length(LayerNames))
 
@@ -47,7 +47,7 @@ read.network.layers <- function(filesDF, Parameters_File, Layers){
   }
 
   gene_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "gene")
-  cult_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "cult")
+  pheno_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "pheno")
 
 
 
@@ -57,25 +57,25 @@ read.network.layers <- function(filesDF, Parameters_File, Layers){
                                                                 "gene", gene_pool_nodes_sorted)
   }
 
-  idx <- which(lapply(NetworkLayers, `[[`, "type") == "cult")
+  idx <- which(lapply(NetworkLayers, `[[`, "type") == "pheno")
   for(i in idx){
     NetworkLayers[[i]][["graph"]] <- add.missing.nodes.to.graph(NetworkLayers[[i]][["graph"]],
-                                                                "cult", cult_pool_nodes_sorted)
+                                                                "pheno", pheno_pool_nodes_sorted)
   }
 
   output=list(
     NetworkLayers=NetworkLayers,
     Layers=Layers,
     gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-    cult_pool_nodes_sorted=cult_pool_nodes_sorted)
+    pheno_pool_nodes_sorted=pheno_pool_nodes_sorted)
   return(output)
 }
 
 
-read.seeds <- function(fileName, gene_pool_nodes_sorted, cult_pool_nodes_sorted){
+read.seeds <- function(fileName, gene_pool_nodes_sorted, pheno_pool_nodes_sorted){
   AllSeeds <- read.csv(fileName, header=FALSE, sep="\t", stringsAsFactors = FALSE)
   AllSeeds <- AllSeeds$V1
-  SeedList <- check.seeds(AllSeeds,gene_pool_nodes_sorted,cult_pool_nodes_sorted)
+  SeedList <- check.seeds(AllSeeds,gene_pool_nodes_sorted,pheno_pool_nodes_sorted)
   return(SeedList)
 }
 generate.pool.nodes <- function(FullNet, type){
@@ -97,24 +97,23 @@ add.missing.nodes.to.graph <- function(g, type, pool_nodes_sorted){
 }
 
 #' This method allows you to import all the parameters that you need for use with ease of use for the other methods.
-
 #'
 #' @param r This is the global restart probability. It has a range of 0 to 1.
-#' @param delta This is the probability of jumping between layers. It has a range of 0 to 1.
-#' @param zeta
+#' @param delta This is the probability of jumping between gene layers. It has a range of 0 to 1.
+#' @param zeta This is the probability of jumping between gene layers. It has a range of 0 to 1.
 #' @param tau This is the Gene Layers Restart Probability. It is a 3 digit vector for (PPI, PATH, COEX) that adds up to 1.
 #' @param phi This is the Phenotype Layers Restart Probability. It si a 3 digit cevtor for (Genotype, EL, LTSS) that adds up to 1.
 #' @param lambda This is the Inter Network Jump Probability. It has a range of 0 to 1.
 #' @param eta This is the networks restart probability. It has a range from 0 to 1.
 #' @param weight This is the weight given to the matrix. it has a range from 0 to 1.
 #' @param LG This is the number of genes that will be used.
-#' @param LC This is the number of phenotypes that will be used.
+#' @param LP This is the number of phenotypes that will be used.
 #'
 #' @return This returns a list of the parameters.
 #' @export
 #'
 #' @examples
-addParameters <- function(r, delta, zeta, tau, phi, lambda, eta, weight, LG, LC){
+addParameters <- function(r, delta, zeta, tau, phi, lambda, eta, weight, LG, LP){
 
   if (r > 1 || r <= 0){ stop("Incorrect r, it must be between 0 and 1")}
 
@@ -124,7 +123,7 @@ addParameters <- function(r, delta, zeta, tau, phi, lambda, eta, weight, LG, LC)
 
   if (sum(tau)/LG != 1) {stop(sprintf("Incorrect tau, the sum of its component divided by %d must be 1", LG))}
 
-  if (sum(phi)/LC != 1) {stop(sprintf("Incorrect phi, the sum of its component divided by %d must be 1", LC))}
+  if (sum(phi)/LP != 1) {stop(sprintf("Incorrect phi, the sum of its component divided by %d must be 1", LP))}
 
   if (lambda > 1 || lambda < 0){ stop("Incorrect lambda, it must be between 0 and 1")}
 
@@ -136,21 +135,21 @@ addParameters <- function(r, delta, zeta, tau, phi, lambda, eta, weight, LG, LC)
   names(parameters) <- c("r", "delta", "zeta", "tau", "phi", "lambda", "eta", "weighted")
   return(parameters)
 }
-check.seeds <- function(Seeds, All_proteins,All_Diseases){
+check.seeds <- function(Seeds, All_genes,All_Phenotypes){
 
-  Genes_Seeds_Ok <- Seeds[which(Seeds %in% All_proteins)]
-  Disease_Seeds_Ok <- Seeds[which(Seeds %in% All_Diseases)]
-  All_seeds_ok <- c(Genes_Seeds_Ok,Disease_Seeds_Ok)
+  Genes_Seeds_Ok <- Seeds[which(Seeds %in% All_genes)]
+  Phenotype_Seeds_Ok <- Seeds[which(Seeds %in% All_Phenotypes)]
+  All_seeds_ok <- c(Genes_Seeds_Ok,Phenotype_Seeds_Ok)
   All_seeds_ko <- Seeds[which(!Seeds %in% All_seeds_ok)]
 
-  list_Seeds_Ok <- list(Genes_Seeds_Ok,Disease_Seeds_Ok)
+  list_Seeds_Ok <- list(Genes_Seeds_Ok,Phenotype_Seeds_Ok)
 
   print("Seeds OK: ")
   print(paste(All_seeds_ok, sep=" "))
   print("Seeds KO: ")
   print(paste(All_seeds_ko, sep=" "))
 
-  if ((length(Genes_Seeds_Ok) == 0) &&  (length(Disease_Seeds_Ok) ==0)){
+  if ((length(Genes_Seeds_Ok) == 0) &&  (length(Phenotype_Seeds_Ok) ==0)){
     stop("Seeds not found in our network")
   } else {
     return(list_Seeds_Ok)
@@ -158,18 +157,18 @@ check.seeds <- function(Seeds, All_proteins,All_Diseases){
 
 }
 
-get.seed.scores <- function(GeneSeeds, CultSeeds, eta, LG, LC, tau, phi) {
+get.seed.scores <- function(GeneSeeds, PhenoSeeds, eta, LG, LP, tau, phi) {
 
   n <- length(GeneSeeds)
-  m <- length(CultSeeds)
+  m <- length(PhenoSeeds)
 
   if ((n != 0 && m!= 0)){
 
     Seed_Genes_Layer_Labeled <- paste0(rep(GeneSeeds,LG), sep="_",rep(seq(LG), length.out = n*LG,each=n))
     Seeds_Genes_Scores <- rep(((1-eta) * tau)/n,n)
 
-    Seed_Cults_Layer_Labeled <- paste0(rep(CultSeeds,LC), sep="_",rep(seq(LC), length.out = m*LC,each=m))
-    Seeds_Cults_Scores <- rep((eta * phi)/m,m)
+    Seed_Phenos_Layer_Labeled <- paste0(rep(PhenoSeeds,LP), sep="_",rep(seq(LP), length.out = m*LP,each=m))
+    Seeds_Phenos_Scores <- rep((eta * phi)/m,m)
 
   } else {
     eta <- 1
@@ -177,20 +176,20 @@ get.seed.scores <- function(GeneSeeds, CultSeeds, eta, LG, LC, tau, phi) {
       Seed_Genes_Layer_Labeled <- character()
       Seeds_Genes_Scores <- numeric()
 
-      Seed_Cults_Layer_Labeled <- paste0(rep(CultSeeds,LC), sep="_",rep(seq(LC), length.out = m*LC,each=m))
-      Seeds_Cults_Scores <- rep((eta * phi)/m, m)
+      Seed_Phenos_Layer_Labeled <- paste0(rep(PhenoSeeds,LP), sep="_",rep(seq(LP), length.out = m*LP,each=m))
+      Seeds_Phenos_Scores <- rep((eta * phi)/m, m)
     } else {
       Seed_Genes_Layer_Labeled <- paste0(rep(GeneSeeds,LG), sep="_",rep(seq(LG), length.out = n*LG,each=n))
       Seeds_Genes_Scores <- rep(tau/n, n)
 
-      Seed_Cults_Layer_Labeled <- character()
-      Seeds_Cults_Scores <- numeric()
+      Seed_Phenos_Layer_Labeled <- character()
+      Seeds_Phenos_Scores <- numeric()
     }
   }
 
   ### We prepare a data frame with the seeds.
-  Seeds_Score <- data.frame(Seeds_ID = c(Seed_Genes_Layer_Labeled, Seed_Cults_Layer_Labeled),
-                            Score = c(Seeds_Genes_Scores, Seeds_Cults_Scores)  ,stringsAsFactors = FALSE)
+  Seeds_Score <- data.frame(Seeds_ID = c(Seed_Genes_Layer_Labeled, Seed_Phenos_Layer_Labeled),
+                            Score = c(Seeds_Genes_Scores, Seeds_Phenos_Scores)  ,stringsAsFactors = FALSE)
   return(Seeds_Score)
 }
 categorize.ranked.genes <- function(CandidateGenes, Final_Rank_Genes, generate.p_values=TRUE){
@@ -279,26 +278,26 @@ create.supraadjacency.matrix <- function(WholeNet, type, N, L, zeta, is.weighted
 
   return(SupraAdjacencyMatrix)
 }
-create.bipartite.matrix <- function(WholeNet, N, M, gene_pool_nodes_sorted, cult_pool_nodes_sorted, numCores, isWeighted){
+create.bipartite.matrix <- function(WholeNet, N, M, gene_pool_nodes_sorted, pheno_pool_nodes_sorted, numCores, isWeighted){
   #WholeNet <- FullNet
-  Gene_Cultivar_Network <- WholeNet[which(lapply(WholeNet, `[[`, "type") == "bipartite")]
-  Gene_Cultivar_Network <- lapply(Gene_Cultivar_Network, `[[`, "DF")[[1]]
+  Gene_Phenoivar_Network <- WholeNet[which(lapply(WholeNet, `[[`, "type") == "bipartite")]
+  Gene_Phenoivar_Network <- lapply(Gene_Phenoivar_Network, `[[`, "DF")[[1]]
 
-  # Get the Subset of Gene-Cultivar relations which have common genes in whole network
-  Gene_Cultivar_Network <- Gene_Cultivar_Network[which(Gene_Cultivar_Network$from %in% gene_pool_nodes_sorted), ]
-  Gene_Cultivar_Network <- Gene_Cultivar_Network[which(Gene_Cultivar_Network$to %in% cult_pool_nodes_sorted), ]
+  # Get the Subset of Gene-Phenoivar relations which have common genes in whole network
+  Gene_Phenoivar_Network <- Gene_Phenoivar_Network[which(Gene_Phenoivar_Network$from %in% gene_pool_nodes_sorted), ]
+  Gene_Phenoivar_Network <- Gene_Phenoivar_Network[which(Gene_Phenoivar_Network$to %in% pheno_pool_nodes_sorted), ]
 
-  Gene_Cultivar_Network <- graph.data.frame(Gene_Cultivar_Network, directed = FALSE)
+  Gene_Phenoivar_Network <- graph.data.frame(Gene_Phenoivar_Network, directed = FALSE)
 
-  el <- as_edgelist(Gene_Cultivar_Network)
-  value <- edge_attr(Gene_Cultivar_Network, name = "weight")
+  el <- as_edgelist(Gene_Phenoivar_Network)
+  value <- edge_attr(Gene_Phenoivar_Network, name = "weight")
   if (!isWeighted){
     value <- rep(1, nrow(el))
   }
 
   Bipartite_matrix <- Matrix(data=0, nrow=N, ncol=M)
   rownames(Bipartite_matrix) <- gene_pool_nodes_sorted
-  colnames(Bipartite_matrix) <- cult_pool_nodes_sorted
+  colnames(Bipartite_matrix) <- pheno_pool_nodes_sorted
   # rindx <- unlist(mclapply(el[,1], function(x) which(rownames(Bipartite_matrix) %in% x), mc.cores=10))
   # cindx <- unlist(mclapply(el[,2], function(x) which(colnames(Bipartite_matrix) %in% x), mc.cores=10))
   rindx <- unlist(lapply(el[,1], function(x) which(rownames(Bipartite_matrix) %in% x)))
@@ -340,8 +339,8 @@ create.bipartite.matrix <- function(WholeNet, N, M, gene_pool_nodes_sorted, cult
 
   return(Bipartite_matrix)
 }
-create.suprabipartite.matrix <- function(Bipartite_matrix, N, M, LG, LC){
-  SupraBipartiteMatrix <- Matrix(0,nrow=N*LG,ncol=M*LC,sparse = TRUE)
+create.suprabipartite.matrix <- function(Bipartite_matrix, N, M, LG, LP){
+  SupraBipartiteMatrix <- Matrix(0,nrow=N*LG,ncol=M*LP,sparse = TRUE)
 
   Row_Node_Names <- sprintf(paste0(rep(rownames(Bipartite_matrix), LG), "_%d"),
                             rep(seq_len(LG), each=N))
@@ -350,18 +349,18 @@ create.suprabipartite.matrix <- function(Bipartite_matrix, N, M, LG, LC){
   rownames(SupraBipartiteMatrix) <- Row_Node_Names
 
 
-  Col_Node_Names <- sprintf(paste0(rep(colnames(Bipartite_matrix), LC), "_%d"),
-                            rep(seq_len(LC), each=M))
+  Col_Node_Names <- sprintf(paste0(rep(colnames(Bipartite_matrix), LP), "_%d"),
+                            rep(seq_len(LP), each=M))
 
-  SupraBipartiteMatrix <- do.call(cbind, replicate(LC, SupraBipartiteMatrix, simplify=FALSE))
+  SupraBipartiteMatrix <- do.call(cbind, replicate(LP, SupraBipartiteMatrix, simplify=FALSE))
   colnames(SupraBipartiteMatrix) <- Col_Node_Names
   return(SupraBipartiteMatrix)
 }
-create.transition.matrix <- function(SupraBipartiteMatrix, N, M, LG, LC, lambda, isTranspose){
-  ###TRUE = Row wise/cult-gene, FALSE = Col Wise/gene-cult
+create.transition.matrix <- function(SupraBipartiteMatrix, N, M, LG, LP, lambda, isTranspose){
+  ###TRUE = Row wise/pheno-gene, FALSE = Col Wise/gene-pheno
   if(isTranspose){
     #### Transition Matrix for the inter-subnetworks links
-    TransitionMatrix <- Matrix(0,nrow=M*LC,ncol=N*LG,sparse = TRUE)
+    TransitionMatrix <- Matrix(0,nrow=M*LP,ncol=N*LG,sparse = TRUE)
     colnames(TransitionMatrix) <- rownames(SupraBipartiteMatrix)
     rownames(TransitionMatrix) <- colnames(SupraBipartiteMatrix)
 
@@ -375,14 +374,14 @@ create.transition.matrix <- function(SupraBipartiteMatrix, N, M, LG, LC, lambda,
   }
   else{
     #### Transition Matrix for the inter-subnetworks links
-    TransitionMatrix <- Matrix(0,nrow=N*LG,ncol=M*LC,sparse = TRUE)
+    TransitionMatrix <- Matrix(0,nrow=N*LG,ncol=M*LP,sparse = TRUE)
     colnames(TransitionMatrix) <- colnames(SupraBipartiteMatrix)
     rownames(TransitionMatrix) <- rownames(SupraBipartiteMatrix)
 
     Col_Sum_Bipartite <- colSums (SupraBipartiteMatrix, na.rm = FALSE, dims = 1,sparseResult = FALSE)
 
     # columnwise normalization for propability
-    for (j in 1:(M*LC)){
+    for (j in 1:(M*LP)){
       if (Col_Sum_Bipartite[j] != 0){
         TransitionMatrix[,j] <- (lambda*SupraBipartiteMatrix[,j]) /Col_Sum_Bipartite[j]
       }
@@ -392,36 +391,36 @@ create.transition.matrix <- function(SupraBipartiteMatrix, N, M, LG, LC, lambda,
 
   return(TransitionMatrix)
 }
-create.transition.matrix.gene_cult <- function(SupraBipartiteMatrix, N, M, LG, LC, lambda){
+create.transition.matrix.gene_pheno <- function(SupraBipartiteMatrix, N, M, LG, LP, lambda){
   #### Transition Matrix for the inter-subnetworks links
-  Transition_Protein_Cultivar <- Matrix(0,nrow=N*LG,ncol=M*LC,sparse = TRUE)
-  colnames(Transition_Protein_Cultivar) <- colnames(SupraBipartiteMatrix)
-  rownames(Transition_Protein_Cultivar) <- rownames(SupraBipartiteMatrix)
+  Transition_Gene_Phenoivar <- Matrix(0,nrow=N*LG,ncol=M*LP,sparse = TRUE)
+  colnames(Transition_Gene_Phenoivar) <- colnames(SupraBipartiteMatrix)
+  rownames(Transition_Gene_Phenoivar) <- rownames(SupraBipartiteMatrix)
 
   Col_Sum_Bipartite <- colSums (SupraBipartiteMatrix, na.rm = FALSE, dims = 1,sparseResult = FALSE)
 
   # columnwise normalization for propability
-  for (j in 1:(M*LC)){
+  for (j in 1:(M*LP)){
     if (Col_Sum_Bipartite[j] != 0){
-      Transition_Protein_Cultivar[,j] <- (lambda*SupraBipartiteMatrix[,j]) /Col_Sum_Bipartite[j]
+      Transition_Gene_Phenoivar[,j] <- (lambda*SupraBipartiteMatrix[,j]) /Col_Sum_Bipartite[j]
     }
   }
-  return(Transition_Protein_Cultivar)
+  return(Transition_Gene_Phenoivar)
 }
-create.transition.matrix.cult_gene <- function(SupraBipartiteMatrix, N, M, LG, LC, lambda){
-  Transition_Cultivar_Protein <- Matrix(0,nrow=M*LC,ncol=N*LG,sparse = TRUE)
+create.transition.matrix.pheno_gene <- function(SupraBipartiteMatrix, N, M, LG, LP, lambda){
+  Transition_Phenoivar_Gene <- Matrix(0,nrow=M*LP,ncol=N*LG,sparse = TRUE)
 
-  colnames(Transition_Cultivar_Protein) <- rownames(SupraBipartiteMatrix)
-  rownames(Transition_Cultivar_Protein) <- colnames(SupraBipartiteMatrix)
+  colnames(Transition_Phenoivar_Gene) <- rownames(SupraBipartiteMatrix)
+  rownames(Transition_Phenoivar_Gene) <- colnames(SupraBipartiteMatrix)
 
   Row_Sum_Bipartite <- rowSums (SupraBipartiteMatrix, na.rm = FALSE, dims = 1,sparseResult = FALSE)
   # row wise normalization for propability
   for (i in 1:(N*LG)){
     if (Row_Sum_Bipartite[i] != 0){
-      Transition_Cultivar_Protein[,i] <- (lambda*SupraBipartiteMatrix[i,])/Row_Sum_Bipartite[i]
+      Transition_Phenoivar_Gene[,i] <- (lambda*SupraBipartiteMatrix[i,])/Row_Sum_Bipartite[i]
     }
   }
-  return(Transition_Cultivar_Protein)
+  return(Transition_Phenoivar_Gene)
 }
 create.transition.multiplex.network <- function(SupraAdjacencyMatrix, SupraBipartiteMatrix, Num, inputLength, lambda, numCores){
   #### Transition Matrix for the intra-subnetworks links
@@ -519,16 +518,16 @@ create.gene.transition.multiplex.network <- function(SupraAdjacencyMatrix, Supra
 
   return(Transition_Multiplex_Network)
 }
-create.cult.transition.multiplex.network <- function(SupraAdjacencyMatrixCult, SupraBipartiteMatrix, M, LC, lambda, numCores){
-  Transition_Multiplex_Network_Cult <- Matrix(0,nrow=M*LC,ncol=M*LC,sparse = TRUE)
+create.pheno.transition.multiplex.network <- function(SupraAdjacencyMatrixPheno, SupraBipartiteMatrix, M, LP, lambda, numCores){
+  Transition_Multiplex_Network_Pheno <- Matrix(0,nrow=M*LP,ncol=M*LP,sparse = TRUE)
 
-  rownames(Transition_Multiplex_Network_Cult) <- rownames(SupraAdjacencyMatrixCult)
-  colnames(Transition_Multiplex_Network_Cult) <- colnames(SupraAdjacencyMatrixCult)
+  rownames(Transition_Multiplex_Network_Pheno) <- rownames(SupraAdjacencyMatrixPheno)
+  colnames(Transition_Multiplex_Network_Pheno) <- colnames(SupraAdjacencyMatrixPheno)
 
-  Col_Sum_Multiplex <- colSums(SupraAdjacencyMatrixCult,na.rm=FALSE,dims=1, sparseResult=FALSE)
+  Col_Sum_Multiplex <- colSums(SupraAdjacencyMatrixPheno,na.rm=FALSE,dims=1, sparseResult=FALSE)
   Col_Sum_Bipartite <- colSums (SupraBipartiteMatrix, na.rm = FALSE, dims = 1,sparseResult = FALSE)
 
-  partLen <- floor(M*LC/numCores)
+  partLen <- floor(M*LP/numCores)
   # below can only happen with toy samples
   if (partLen==0){
     stop("Assigned numCores is greater than data length! Assign less!")
@@ -539,7 +538,7 @@ create.cult.transition.multiplex.network <- function(SupraAdjacencyMatrixCult, S
     stInd <- (i-1)*partLen + 1
     endInd <- i*partLen
     if (i==numCores){
-      endInd <- M*LC
+      endInd <- M*LP
     }
     parts[[i]][['start']] <- stInd
     parts[[i]][['end']] <- endInd
@@ -547,57 +546,57 @@ create.cult.transition.multiplex.network <- function(SupraAdjacencyMatrixCult, S
   cl <- makeCluster(numCores+1)
 
   registerDoParallel(cl)
-  Transition_Multiplex_Network_Cult_Result <- foreach (i=1:numCores, .packages='Matrix') %dopar% {
+  Transition_Multiplex_Network_Pheno_Result <- foreach (i=1:numCores, .packages='Matrix') %dopar% {
     for (j in parts[[i]]["start"]:parts[[i]]["end"]){
       if(Col_Sum_Bipartite[j] != 0){
-        Transition_Multiplex_Network_Cult[,j] <- ((1-lambda)*SupraAdjacencyMatrixCult[,j]) /Col_Sum_Multiplex[j]
+        Transition_Multiplex_Network_Pheno[,j] <- ((1-lambda)*SupraAdjacencyMatrixPheno[,j]) /Col_Sum_Multiplex[j]
       } else {
-        Transition_Multiplex_Network_Cult[,j] <- SupraAdjacencyMatrixCult[,j] /Col_Sum_Multiplex[j]
+        Transition_Multiplex_Network_Pheno[,j] <- SupraAdjacencyMatrixPheno[,j] /Col_Sum_Multiplex[j]
       }
     }
-    return(Transition_Multiplex_Network_Cult)
+    return(Transition_Multiplex_Network_Pheno)
   }
 
-  Transition_Multiplex_Network_Cult <- Reduce('+', Transition_Multiplex_Network_Cult_Result)
+  Transition_Multiplex_Network_Pheno <- Reduce('+', Transition_Multiplex_Network_Pheno_Result)
   stopCluster(cl)
-  return(Transition_Multiplex_Network_Cult)
+  return(Transition_Multiplex_Network_Pheno)
 }
 rankScores<- function(numGene, numGeneLayers,numPheno, numPhenoLayers, geneSeeds, phenoSeeds, results){
-  rank_proteins(numGene, numGeneLayers, results, geneSeeds)
+  rank_genes(numGene, numGeneLayers, results, geneSeeds)
 }
-rank_proteins <- function(Number_Proteins, Number_Layers,Results,Seeds){
-  ## We sort the score to obtain the ranking of Proteins and Diseases.
-  proteins_rank <- data.frame(Gene = character(length = Number_Proteins), Score = 0)
-  proteins_rank$Gene <- gsub("_1", "", row.names(Results)[1:Number_Proteins])
+rank_genes <- function(Number_Genes, Number_Layers,Results,Seeds){
+  ## We sort the score to obtain the ranking of Genes and Phenotypes.
+  genes_rank <- data.frame(Gene = character(length = Number_Genes), Score = 0)
+  genes_rank$Gene <- gsub("_1", "", row.names(Results)[1:Number_Genes])
 
-  ## We calculate the Geometric Mean among the proteins in the different layers.
-  proteins_rank$Score <- geometric.mean(as.vector(Results[,1]),Number_Layers,Number_Proteins)
+  ## We calculate the Geometric Mean among the genes in the different layers.
+  genes_rank$Score <- geometric.mean(as.vector(Results[,1]),Number_Layers,Number_Genes)
 
-  proteins_rank_sort <- proteins_rank[with(proteins_rank, order(-Score, Gene)), ]
+  genes_rank_sort <- genes_rank[with(genes_rank, order(-Score, Gene)), ]
 
   ### We remove the seed genes from the Ranking
-  proteins_rank_sort_NoSeeds <- proteins_rank_sort[which(!proteins_rank_sort$Gene %in% Seeds),]
+  genes_rank_sort_NoSeeds <- genes_rank_sort[which(!genes_rank_sort$Gene %in% Seeds),]
 
-  proteins_rank_sort_NoSeeds$Rank <- seq(1, nrow(proteins_rank_sort_NoSeeds))
-  proteins_rank_sort_NoSeeds <-proteins_rank_sort_NoSeeds[,c("Rank","Gene","Score")]
+  genes_rank_sort_NoSeeds$Rank <- seq(1, nrow(genes_rank_sort_NoSeeds))
+  genes_rank_sort_NoSeeds <-genes_rank_sort_NoSeeds[,c("Rank","Gene","Score")]
 
-  return(proteins_rank_sort_NoSeeds)
+  return(genes_rank_sort_NoSeeds)
 }
-rank_cultivars <- function(Number_Proteins,Num_Gene_Layers,Number_Diseases,Num_Cult_Layers, Results,Seeds){
+rank_phenotypes <- function(Number_Genes,Num_Gene_Layers,Number_Phenotypes,Num_Pheno_Layers, Results,Seeds){
 
-  ## rank_diseases
-  diseases_rank <- data.frame(Cult = character(length = Number_Diseases), Score = 0)
-  diseases_rank$Cult <- gsub("_1", "", row.names(Results)[(Number_Proteins*Num_Gene_Layers+1):(Number_Proteins*Num_Gene_Layers+Number_Diseases)])
+  ## rank_phenotypes
+  phenotypes_rank <- data.frame(Pheno = character(length = Number_Phenotypes), Score = 0)
+  phenotypes_rank$Pheno <- gsub("_1", "", row.names(Results)[(Number_Genes*Num_Gene_Layers+1):(Number_Genes*Num_Gene_Layers+Number_Phenotypes)])
 
-  diseases_rank$Score <- geometric.mean(as.vector(Results[,1])[(Number_Proteins*Num_Gene_Layers+1):nrow(Results)],Num_Cult_Layers,Number_Diseases)
+  phenotypes_rank$Score <- geometric.mean(as.vector(Results[,1])[(Number_Genes*Num_Gene_Layers+1):nrow(Results)],Num_Pheno_Layers,Number_Phenotypes)
 
-  diseases_rank_sort <- diseases_rank[with(diseases_rank, order(-Score, Cult)), ]
-  diseases_rank_sort_NoSeeds <- diseases_rank_sort[which(!diseases_rank_sort$Cult %in% Seeds),]
+  phenotypes_rank_sort <- phenotypes_rank[with(phenotypes_rank, order(-Score, Pheno)), ]
+  phenotypes_rank_sort_NoSeeds <- phenotypes_rank_sort[which(!phenotypes_rank_sort$Pheno %in% Seeds),]
 
-  diseases_rank_sort_NoSeeds$Rank <- seq(1, nrow(diseases_rank_sort_NoSeeds))
-  diseases_rank_sort_NoSeeds <-diseases_rank_sort_NoSeeds[,c("Rank","Cult","Score")]
+  phenotypes_rank_sort_NoSeeds$Rank <- seq(1, nrow(phenotypes_rank_sort_NoSeeds))
+  phenotypes_rank_sort_NoSeeds <-phenotypes_rank_sort_NoSeeds[,c("Rank","Pheno","Score")]
 
-  return(diseases_rank_sort_NoSeeds)
+  return(phenotypes_rank_sort_NoSeeds)
 }
 geometric.mean <- function(Scores, L, N) {
 
@@ -611,7 +610,7 @@ geometric.mean <- function(Scores, L, N) {
 }
 Random_Walk_Restarts <- function(Walk_Matrix, r, Seeds_Score){
   ### We define the threshold and the number maximum of iterations for the randon walker.
-  Seeds_Score <- get.seed.scores(GeneSeeds,CultSeeds, Parameters$eta, LG, LC, Parameters$tau/LG, Parameters$phi/LC)
+  Seeds_Score <- get.seed.scores(GeneSeeds,PhenoSeeds, Parameters$eta, LG, LP, Parameters$tau/LG, Parameters$phi/LP)
   Threeshold <- 1e-10
   NetworkSize <- ncol(Walk_Matrix)
 
@@ -640,7 +639,7 @@ Random_Walk_Restarts <- function(Walk_Matrix, r, Seeds_Score){
    print(iter-1)
   return(prox_vector)
 }
-get.connectivity <- function(NetworkDF, gene_pool_nodes_sorted, cult_pool_nodes_sorted){
+get.connectivity <- function(NetworkDF, gene_pool_nodes_sorted, pheno_pool_nodes_sorted){
   WholeNet <- bind_rows(lapply(NetworkDF, `[[`, "DF"))
   g <- graph.data.frame(WholeNet, directed=FALSE)
   A <- as_adjacency_matrix(g, sparse = TRUE, attr="weight")
@@ -649,14 +648,14 @@ get.connectivity <- function(NetworkDF, gene_pool_nodes_sorted, cult_pool_nodes_
   Connectivity <- Connectivity[order(Connectivity$Degree, decreasing = TRUE),]
   Connectivity$Node <- as.character(Connectivity$Node)
   GeneConnectivity <- Connectivity[which(Connectivity$Node %in% gene_pool_nodes_sorted),]
-  CultConnectivity <- Connectivity[which(Connectivity$Node %in% cult_pool_nodes_sorted),]
-  return(list(gene=GeneConnectivity,cult=CultConnectivity))
+  PhenoConnectivity <- Connectivity[which(Connectivity$Node %in% pheno_pool_nodes_sorted),]
+  return(list(gene=GeneConnectivity,pheno=PhenoConnectivity))
 }
 
 
 get.WalkMatrixID <- function(filesDF){
   WM_DF <-  read.table(filesDF$file_name[filesDF$layer_type=="WM_DF"], header=TRUE, sep="\t", stringsAsFactors = FALSE)
-  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "cult", "bipartite")]
+  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "pheno", "bipartite")]
   LayerNames <- paste0(LayerNames,collapse=',')
   new_WM <- data.frame(ID=ifelse(length(WM_DF$ID)==0, 1, max(WM_DF$ID)+1),Layers=LayerNames, Date=as.character(Sys.time()))
   WM_DF <- rbind(WM_DF, new_WM)
@@ -670,16 +669,16 @@ get.WalkMatrixID <- function(filesDF){
 }
 
 
-#' Generates a Walk matrix file from Gene and Cultivar data
+#' Generates a Walk matrix file from Gene and Phenoivar data
 #'
 #' Generates a walk matrix file from the data given by the user.
-#' The data for each gene and cultivar is added to supraadjency matrixes,
+#' The data for each gene and phenotype is added to supraadjency matrixes,
 #' bipartite matrixes, and suprabipartite matrixes.These are combined to make transition and
 #' transistion multiplex networks. A multiplex heterogeneous network is created by
 #' combining the transition and transition multiplex networks.
 #' That network then gets saved to an RDA file
 #'
-#' @param inputFileName name of the txt file that contains the gene and cultivar data.
+#' @param inputFileName name of the txt file that contains the gene and phenotype data.
 #' @param numCores number of cores used for parallel processing.
 #'     - recommended to use detectCores() method from the parallel package.
 #'
@@ -695,17 +694,17 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
   Parameters <- params
   FilesDF <- Settings$FilesDF
   LG <- Settings$LG
-  LC <- Settings$LC
+  LP <- Settings$LP
 
-  cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "cult", "bipartite")], collapse = ","), "\n")
+  cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "pheno", "bipartite")], collapse = ","), "\n")
   FullNet <- read.network.layers(FilesDF, Parameters, Settings$Layers)
   Layers <- FullNet$Layers
   gene_pool_nodes_sorted <- FullNet$gene_pool_nodes_sorted
-  cult_pool_nodes_sorted <- FullNet$cult_pool_nodes_sorted
+  pheno_pool_nodes_sorted <- FullNet$pheno_pool_nodes_sorted
   FullNet <- FullNet$NetworkLayers
 
   N=length(gene_pool_nodes_sorted)
-  M <- length(cult_pool_nodes_sorted)
+  M <- length(pheno_pool_nodes_sorted)
   cat("Time to Initialize : ", format(Sys.time()-t1), "\n")
 
 
@@ -717,12 +716,12 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
 
   # CREATE SUPRAADJACENCYMATRIX FOR CULTIVARS
   t1 <- Sys.time()
-  SupraAdjacencyMatrixCult <- create.supraadjacency.matrix(FullNet, "cult", M, LC, Parameters$delta, TRUE)
-  cat("Time to create SupraAdjacencyMatrix for Cultivars : ", format(Sys.time()-t1), "\n")
+  SupraAdjacencyMatrixPheno <- create.supraadjacency.matrix(FullNet, "pheno", M, LP, Parameters$delta, TRUE)
+  cat("Time to create SupraAdjacencyMatrix for Phenoivars : ", format(Sys.time()-t1), "\n")
 
   # CREATE THE BIPARTITE GRAPH
   t1 <- Sys.time()
-  BipartiteMatrix <- create.bipartite.matrix(FullNet, N, M, gene_pool_nodes_sorted, cult_pool_nodes_sorted, numCores, Parameters$weighted)
+  BipartiteMatrix <- create.bipartite.matrix(FullNet, N, M, gene_pool_nodes_sorted, pheno_pool_nodes_sorted, numCores, Parameters$weighted)
   cat("Time to create BipartiteMatrix : ", format(Sys.time()-t1), "\n")
 
 
@@ -730,22 +729,22 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
 
   ## We expand the biparite graph to fit the multiplex dimensions.
   ## The biparti matrix has now NL x MK
-  ## The genes in all the layers have to point to the cultivars in all layers
+  ## The genes in all the layers have to point to the phenotypes in all layers
 
   t1 <- Sys.time()
-  SupraBipartiteMatrix <- create.suprabipartite.matrix(BipartiteMatrix, N, M, LG, LC)
+  SupraBipartiteMatrix <- create.suprabipartite.matrix(BipartiteMatrix, N, M, LG, LP)
   cat("Time to create SupraBipartiteMatrix : ", format(Sys.time()-t1), "\n")
 
 
   t1 <- Sys.time()
-  #Transition_Protein_Cultivar <- create.transition.matrix.gene_cult(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Protein_Cultivar <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, FALSE)
-  cat("Time to create Transition Matrix for Genes-Cultivars : ", format(Sys.time()-t1), "\n")
+  #Transition_Gene_Phenoivar <- create.transition.matrix.gene_pheno(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda)
+  Transition_Gene_Phenoivar <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda, FALSE)
+  cat("Time to create Transition Matrix for Genes-Phenoivars : ", format(Sys.time()-t1), "\n")
 
   t1 <- Sys.time()
-  #Transition_Cultivar_Protein <- create.transition.matrix.cult_gene(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Cultivar_Protein <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, TRUE)
-  cat("Time to create Transition Matrix for Cultivars-Genes : ", format(Sys.time()-t1), "\n")
+  #Transition_Phenoivar_Gene <- create.transition.matrix.pheno_gene(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda)
+  Transition_Phenoivar_Gene <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda, TRUE)
+  cat("Time to create Transition Matrix for Phenoivars-Genes : ", format(Sys.time()-t1), "\n")
 
 
   t1 <- Sys.time()
@@ -762,40 +761,40 @@ create.WalkMatrix <- function(inputFileName, params, numCores){
 
   # CREATE TRANSITION MULTIPLEX NETWORK FOR CULTIVARS
   t1 <- Sys.time()
-  Cult_Transition_Multiplex_Network <- create.cult.transition.multiplex.network(SupraAdjacencyMatrixCult,
+  Pheno_Transition_Multiplex_Network <- create.pheno.transition.multiplex.network(SupraAdjacencyMatrixPheno,
                                                                                 SupraBipartiteMatrix,
-                                                                                M, LC, Parameters$lambda, numCores)
-  #Cult_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrixCult,
+                                                                                M, LP, Parameters$lambda, numCores)
+  #Pheno_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrixPheno,
    #                                                                            SupraBipartiteMatrix,
-    #                                                                           M, LC, Parameters$lambda, numCores)
-  cat("Time to create Cult Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
+    #                                                                           M, LP, Parameters$lambda, numCores)
+  cat("Time to create Pheno Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
 
 
-  #printSpMatrix2(round(Cult_Transition_Multiplex_Network, 3), col.names = TRUE)
-  #colSums(Cult_Transition_Multiplex_Network)
+  #printSpMatrix2(round(Pheno_Transition_Multiplex_Network, 3), col.names = TRUE)
+  #colSums(Pheno_Transition_Multiplex_Network)
 
   # CREATE FINAL TRANSITION MULTIPLEX HETERO MATRIX
 
   t1 <- Sys.time()
 
   ### We generate the global transiction matrix and we return it.
-  Multiplex_Heterogeneous_Matrix <- rbind(cbind(Gene_Transition_Multiplex_Network, Transition_Protein_Cultivar),
-                                          cbind(Transition_Cultivar_Protein, Cult_Transition_Multiplex_Network))
+  Multiplex_Heterogeneous_Matrix <- rbind(cbind(Gene_Transition_Multiplex_Network, Transition_Gene_Phenoivar),
+                                          cbind(Transition_Phenoivar_Gene, Pheno_Transition_Multiplex_Network))
 
   cat("Time to create Final Multiplex Heterogeneous Network : ", format(Sys.time()-t1), "\n")
 
 
   #Extract candidate genes for further Random Walks on this WM
-  GeneCultDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
-  CandidateGenes <- unique(GeneCultDF$from)
-  Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, cult_pool_nodes_sorted)
+  GenePhenoDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
+  CandidateGenes <- unique(GenePhenoDF$from)
+  Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, pheno_pool_nodes_sorted)
   WM_ID <- get.WalkMatrixID(FilesDF)
 
   saveit(WM=Multiplex_Heterogeneous_Matrix,
-         GeneConnectivity=Connectivity[["gene"]], CultConnectivity=Connectivity[["cult"]],
-         LG=LG, LC=LC, M=M, N=N, Parameters=Parameters,
+         GeneConnectivity=Connectivity[["gene"]], PhenoConnectivity=Connectivity[["pheno"]],
+         LG=LG, LP=LP, M=M, N=N, Parameters=Parameters,
          gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-         cult_pool_nodes_sorted=cult_pool_nodes_sorted,
+         pheno_pool_nodes_sorted=pheno_pool_nodes_sorted,
          CandidateGenes=CandidateGenes,
          WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]],
          file = paste0("WM_", WM_ID[["ID"]], ".rda"))
@@ -819,18 +818,18 @@ createWalkMatrixUpdated <- function(inputFileName, params, numCores){
   Parameters <- params
   FilesDF <- Settings$FilesDF
   LG <- Settings$LG
-  LC <- Settings$LC
+  LP <- Settings$LP
 
 
-  cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "cult", "bipartite")], collapse = ","), "\n")
+  cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "pheno", "bipartite")], collapse = ","), "\n")
   FullNet <- read.network.layers(FilesDF, Parameters, Settings$Layers)
   Layers <- FullNet$Layers
   gene_pool_nodes_sorted <- FullNet$gene_pool_nodes_sorted
-  cult_pool_nodes_sorted <- FullNet$cult_pool_nodes_sorted
+  pheno_pool_nodes_sorted <- FullNet$pheno_pool_nodes_sorted
   FullNet <- FullNet$NetworkLayers
 
   N=length(gene_pool_nodes_sorted)
-  M <- length(cult_pool_nodes_sorted)
+  M <- length(pheno_pool_nodes_sorted)
   cat("Time to Initialize : ", format(Sys.time()-t1), "\n")
 
 
@@ -842,12 +841,12 @@ createWalkMatrixUpdated <- function(inputFileName, params, numCores){
 
   # CREATE SUPRAADJACENCYMATRIX FOR CULTIVARS
   t1 <- Sys.time()
-  SupraAdjacencyMatrixCult <- create.supraadjacency.matrix(FullNet, "cult", M, LC, Parameters$delta, TRUE)
-  cat("Time to create SupraAdjacencyMatrix for Cultivars : ", format(Sys.time()-t1), "\n")
+  SupraAdjacencyMatrixPheno <- create.supraadjacency.matrix(FullNet, "pheno", M, LP, Parameters$delta, TRUE)
+  cat("Time to create SupraAdjacencyMatrix for Phenoivars : ", format(Sys.time()-t1), "\n")
 
   # CREATE THE BIPARTITE GRAPH
   t1 <- Sys.time()
-  BipartiteMatrix <- create.bipartite.matrix(FullNet, N, M, gene_pool_nodes_sorted, cult_pool_nodes_sorted, numCores, Parameters$weighted)
+  BipartiteMatrix <- create.bipartite.matrix(FullNet, N, M, gene_pool_nodes_sorted, pheno_pool_nodes_sorted, numCores, Parameters$weighted)
   cat("Time to create BipartiteMatrix : ", format(Sys.time()-t1), "\n")
 
 
@@ -855,22 +854,22 @@ createWalkMatrixUpdated <- function(inputFileName, params, numCores){
 
   ## We expand the biparite graph to fit the multiplex dimensions.
   ## The biparti matrix has now NL x MK
-  ## The genes in all the layers have to point to the cultivars in all layers
+  ## The genes in all the layers have to point to the phenotypes in all layers
 
   t1 <- Sys.time()
-  SupraBipartiteMatrix <- create.suprabipartite.matrix(BipartiteMatrix, N, M, LG, LC)
+  SupraBipartiteMatrix <- create.suprabipartite.matrix(BipartiteMatrix, N, M, LG, LP)
   cat("Time to create SupraBipartiteMatrix : ", format(Sys.time()-t1), "\n")
 
 
   t1 <- Sys.time()
-  #Transition_Protein_Cultivar <- create.transition.matrix.gene_cult(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Protein_Cultivar <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, FALSE)
-  cat("Time to create Transition Matrix for Genes-Cultivars : ", format(Sys.time()-t1), "\n")
+  #Transition_Gene_Phenoivar <- create.transition.matrix.gene_pheno(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda)
+  Transition_Gene_Phenoivar <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda, FALSE)
+  cat("Time to create Transition Matrix for Genes-Phenoivars : ", format(Sys.time()-t1), "\n")
 
   t1 <- Sys.time()
-  #Transition_Cultivar_Protein <- create.transition.matrix.cult_gene(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda)
-  Transition_Cultivar_Protein <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LC, Parameters$lambda, TRUE)
-  cat("Time to create Transition Matrix for Cultivars-Genes : ", format(Sys.time()-t1), "\n")
+  #Transition_Phenoivar_Gene <- create.transition.matrix.pheno_gene(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda)
+  Transition_Phenoivar_Gene <- create.transition.matrix(SupraBipartiteMatrix, N, M, LG, LP, Parameters$lambda, TRUE)
+  cat("Time to create Transition Matrix for Phenoivars-Genes : ", format(Sys.time()-t1), "\n")
 
 
   t1 <- Sys.time()
@@ -887,52 +886,52 @@ createWalkMatrixUpdated <- function(inputFileName, params, numCores){
 
   # CREATE TRANSITION MULTIPLEX NETWORK FOR CULTIVARS
   t1 <- Sys.time()
-  Cult_Transition_Multiplex_Network <- create.cult.transition.multiplex.network(SupraAdjacencyMatrixCult,
+  Pheno_Transition_Multiplex_Network <- create.pheno.transition.multiplex.network(SupraAdjacencyMatrixPheno,
                                                                                 SupraBipartiteMatrix,
-                                                                                M, LC, Parameters$lambda, numCores)
-  #Cult_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrixCult,
+                                                                                M, LP, Parameters$lambda, numCores)
+  #Pheno_Transition_Multiplex_Network <- create.transition.multiplex.network(SupraAdjacencyMatrixPheno,
   #                                                                            SupraBipartiteMatrix,
-  #                                                                           M, LC, Parameters$lambda, numCores)
-  cat("Time to create Cult Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
+  #                                                                           M, LP, Parameters$lambda, numCores)
+  cat("Time to create Pheno Transition Multiplex Network : ", format(Sys.time()-t1), "\n")
 
 
-  #printSpMatrix2(round(Cult_Transition_Multiplex_Network, 3), col.names = TRUE)
-  #colSums(Cult_Transition_Multiplex_Network)
+  #printSpMatrix2(round(Pheno_Transition_Multiplex_Network, 3), col.names = TRUE)
+  #colSums(Pheno_Transition_Multiplex_Network)
 
   # CREATE FINAL TRANSITION MULTIPLEX HETERO MATRIX
 
   t1 <- Sys.time()
 
   ### We generate the global transiction matrix and we return it.
-  Multiplex_Heterogeneous_Matrix <- rbind(cbind(Gene_Transition_Multiplex_Network, Transition_Protein_Cultivar),
-                                          cbind(Transition_Cultivar_Protein, Cult_Transition_Multiplex_Network))
+  Multiplex_Heterogeneous_Matrix <- rbind(cbind(Gene_Transition_Multiplex_Network, Transition_Gene_Phenoivar),
+                                          cbind(Transition_Phenoivar_Gene, Pheno_Transition_Multiplex_Network))
 
   cat("Time to create Final Multiplex Heterogeneous Network : ", format(Sys.time()-t1), "\n")
 
 
   #Extract candidate genes for further Random Walks on this WM
-  GeneCultDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
-  CandidateGenes <- unique(GeneCultDF$from)
-  Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, cult_pool_nodes_sorted)
+  GenePhenoDF <- lapply(FullNet[which(lapply(FullNet, `[[`, "type") == "bipartite")], `[[`, "DF")[[1]]
+  CandidateGenes <- unique(GenePhenoDF$from)
+  Connectivity <- get.connectivity(FullNet, gene_pool_nodes_sorted, pheno_pool_nodes_sorted)
   #WM_ID <- get.WalkMatrixID(FilesDF)
 
-  WM <- list("WM"=Multiplex_Heterogeneous_Matrix,Connectivity[["gene"]],"GeneConnectivity"=Connectivity[["cult"]],
-             "gene_pool_nodes_sorted"=gene_pool_nodes_sorted, "cult_pool_nodes_sorted"=cult_pool_nodes_sorted,
+  WM <- list("WM"=Multiplex_Heterogeneous_Matrix,Connectivity[["gene"]],"GeneConnectivity"=Connectivity[["pheno"]],
+             "gene_pool_nodes_sorted"=gene_pool_nodes_sorted, "pheno_pool_nodes_sorted"=pheno_pool_nodes_sorted,
              "CandidateGenes"=CandidateGenes)
   # WM <-list(WM=Multiplex_Heterogeneous_Matrix,
-  #           GeneConnectivity=Connectivity[["gene"]], CultConnectivity=Connectivity[["cult"]],
-  #           LG=LG, LC=LC, M=M, N=N, Parameters=Parameters,
+  #           GeneConnectivity=Connectivity[["gene"]], PhenoConnectivity=Connectivity[["pheno"]],
+  #           LG=LG, LP=LP, M=M, N=N, Parameters=Parameters,
   #           gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-  #           cult_pool_nodes_sorted=cult_pool_nodes_sorted,
+  #           pheno_pool_nodes_sorted=pheno_pool_nodes_sorted,
   #           CandidateGenes=CandidateGenes, WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]])
 
-  #names(WM) <- c("WM", "GeneConnectivity", "CultConnectivity", "LG", "LC", "M", "N", "Parameters",
-                 #"gene_pool_nodes_sorted", "cult_pool_nodes_sorted", "CandidateGenes", "WM_ID", "WM_Layers")
+  #names(WM) <- c("WM", "GeneConnectivity", "PhenoConnectivity", "LG", "LP", "M", "N", "Parameters",
+                 #"gene_pool_nodes_sorted", "pheno_pool_nodes_sorted", "CandidateGenes", "WM_ID", "WM_Layers")
   # saveit(WM=Multiplex_Heterogeneous_Matrix,
-  #        GeneConnectivity=Connectivity[["gene"]], CultConnectivity=Connectivity[["cult"]],
-  #        LG=LG, LC=LC, M=M, N=N, Parameters=Parameters,
+  #        GeneConnectivity=Connectivity[["gene"]], PhenoConnectivity=Connectivity[["pheno"]],
+  #        LG=LG, LP=LP, M=M, N=N, Parameters=Parameters,
   #        gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-  #        cult_pool_nodes_sorted=cult_pool_nodes_sorted,
+  #        pheno_pool_nodes_sorted=pheno_pool_nodes_sorted,
   #        CandidateGenes=CandidateGenes,
   #        WM_ID = WM_ID[["ID"]], WM_Layers=WM_ID[["LayerNames"]],
   #        file = paste0("WM_", WM_ID[["ID"]], ".rda"))
@@ -983,30 +982,30 @@ generate.random.seeds <- function(Seeds, ConnectivityDF, S=1000, no.groups=10, r
 #' @param ResultID
 #' @param GeneSeeds
 #' @param GeneConnectivityDF
-#' @param CultSeeds
-#' @param CultConnectivityDF
+#' @param PhenoSeeds
+#' @param PhenoConnectivityDF
 #' @param S
 #' @param no.groups.gene
-#' @param no.groups.cult
+#' @param no.groups.pheno
 #'
 #' @return
 #' @export
 #'
 #' @examples
-generate.random.seed.vector <- function(output_dir, WM_ID, GeneSeeds, GeneConnectivityDF, CultSeeds,
-                                        CultConnectivityDF, S=1000, no.groups.gene=10, no.groups.cult=5){
+generate.random.seed.vector <- function(output_dir, WM_ID, GeneSeeds, GeneConnectivityDF, PhenoSeeds,
+                                        PhenoConnectivityDF, S=1000, no.groups.gene=10, no.groups.pheno=5){
 
-  if(length(GeneSeeds)==0 && length(CultSeeds)==0) stop("No seeds provided!")
+  if(length(GeneSeeds)==0 && length(PhenoSeeds)==0) stop("No seeds provided!")
   GeneConnectivity <- assign.group.to.connectivityDF(GeneConnectivity, no.groups=no.groups.gene)
-  CultConnectivity <- assign.group.to.connectivityDF(CultConnectivity, no.groups=no.groups.cult)
+  PhenoConnectivity <- assign.group.to.connectivityDF(PhenoConnectivity, no.groups=no.groups.pheno)
 
 
   # sink(paste0(output_dir, "/WM_", WM_ID, "_Connectivity.txt"), append=FALSE)
   # print("Summary of Degree Connectivity of Genes by Group:")
   # print(GeneConnectivity %>%group_by(Group) %>% summarise(n=n(), min=min(Degree), max=max(Degree), mean = mean(Degree)))
   # print("------")
-  # print("Summary of Degree Connectivity of Cultivars by Group:")
-  # print(CultConnectivity %>%
+  # print("Summary of Degree Connectivity of Phenoivars by Group:")
+  # print(PhenoConnectivity %>%
   #   group_by(Group) %>%
   #   summarise(n=n(), min=min(Degree), max=max(Degree), mean = mean(Degree)))
   # sink()
@@ -1019,18 +1018,18 @@ generate.random.seed.vector <- function(output_dir, WM_ID, GeneSeeds, GeneConnec
     #RandomSeeds <- RandomGeneSeeds
   }
 
-  RandomCultSeeds <- list()
-  if(length(CultSeeds)!=0){
-    RandomCultSeeds <- generate.random.seeds(CultSeeds, CultConnectivity, S, no.groups.cult, TRUE)
-    if(length(CultSeeds)!=1 && any(duplicated(RandomCultSeeds[1:S]))) warning("WARN: Duplicated random 'cultivar' seeds generated!")
+  RandomPhenoSeeds <- list()
+  if(length(PhenoSeeds)!=0){
+    RandomPhenoSeeds <- generate.random.seeds(PhenoSeeds, PhenoConnectivity, S, no.groups.pheno, TRUE)
+    if(length(PhenoSeeds)!=1 && any(duplicated(RandomPhenoSeeds[1:S]))) warning("WARN: Duplicated random 'phenotype' seeds generated!")
     #RandomSeeds <- RandomGeneSeeds
   }
 
-  # if(length(GeneSeeds)!=0 & length(CultSeeds)!=0){
-  #   RandomSeeds <- mapply(c, RandomGeneSeeds, RandomCultSeeds, SIMPLIFY=FALSE)
+  # if(length(GeneSeeds)!=0 & length(PhenoSeeds)!=0){
+  #   RandomSeeds <- mapply(c, RandomGeneSeeds, RandomPhenoSeeds, SIMPLIFY=FALSE)
   # }else if(length(RandomSeeds)==0) stop("No seeds provided!")
 
-  return(list(gene=RandomGeneSeeds,cult=RandomCultSeeds))
+  return(list(gene=RandomGeneSeeds,pheno=RandomPhenoSeeds))
 
 }
 
@@ -1092,24 +1091,24 @@ calculate.p_values <- function(RWGeneRanks, Rand_Seed_Gene_Rank, output_dir, no.
   dfRanks
 }
 
-Random_Walk_Restarts_Batch <- function(Walk_Matrix, GeneSeedsList, CultSeedsList, N, LG, LC, eta, tau, phi, r, funcs, no.cores=4){
+Random_Walk_Restarts_Batch <- function(Walk_Matrix, GeneSeedsList, PhenoSeedsList, N, LG, LP, eta, tau, phi, r, funcs, no.cores=4){
   # t <- Sys.time()
   cl <- makeCluster(no.cores)
   registerDoParallel(cl)
-  seedsLength <- ifelse(length(GeneSeedsList)!=0, length(GeneSeedsList), length(CultSeedsList))
-  #funcs <- c('get.seed.scores', 'Random_Walk_Restarts', 'rank_proteins')
+  seedsLength <- ifelse(length(GeneSeedsList)!=0, length(GeneSeedsList), length(PhenoSeedsList))
+  #funcs <- c('get.seed.scores', 'Random_Walk_Restarts', 'rank_genes')
 
   Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.export=funcs,.packages=c('Matrix')) %dopar% {
-    if (length(GeneSeedsList)!=0 && length(CultSeedsList)!=0){
-      Seeds_Score <- get.seed.scores(GeneSeedsList[[i]], CultSeedsList[[i]], eta, LG, LC, tau, phi )
+    if (length(GeneSeedsList)!=0 && length(PhenoSeedsList)!=0){
+      Seeds_Score <- get.seed.scores(GeneSeedsList[[i]], PhenoSeedsList[[i]], eta, LG, LP, tau, phi )
     }else if(length(GeneSeedsList)!=0){
-      Seeds_Score <- get.seed.scores(GeneSeedsList[[i]], vector(), eta, LG, LC, tau, phi )
+      Seeds_Score <- get.seed.scores(GeneSeedsList[[i]], vector(), eta, LG, LP, tau, phi )
     }else{
-      Seeds_Score <- get.seed.scores(vector(), CultSeedsList[[i]], eta, LG, LC, tau, phi )
+      Seeds_Score <- get.seed.scores(vector(), PhenoSeedsList[[i]], eta, LG, LP, tau, phi )
     }
 
     Rand_Seed_Res <- Random_Walk_Restarts(Walk_Matrix, r, Seeds_Score)
-    Rand_Seed_Gene_Rank <- rank_proteins(N, LG, Rand_Seed_Res, ifelse(length(GeneSeedsList)!=0, GeneSeedsList[[i]], vector()))
+    Rand_Seed_Gene_Rank <- rank_genes(N, LG, Rand_Seed_Res, ifelse(length(GeneSeedsList)!=0, GeneSeedsList[[i]], vector()))
 
     return(Rand_Seed_Gene_Rank)
   }
