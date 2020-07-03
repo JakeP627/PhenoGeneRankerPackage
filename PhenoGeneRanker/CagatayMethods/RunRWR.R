@@ -45,6 +45,8 @@ cat("Running for Walk Matrix: ", WM_ID, " - ", WM_Layers, "\n")
 t1 <- Sys.time()
 # Read Seed Genes Used for RWR
 SeedList <- read.seeds(paste0(inputDir, seedFile), gene_pool_nodes_sorted, cult_pool_nodes_sorted)
+
+#a list or a vector of genes/phenotypes
 GeneSeeds <- SeedList[[1]]
 CultSeeds <- SeedList[[2]]
 

@@ -35,12 +35,16 @@ numCores <- detectCores()
 #numCores <- 12
 numCores
 
-tau <- c(1,1,1)
-phi <- c(1,1,1)
-myParams <- addParameters(.7,.5,.5,tau,phi,.5,.5,1,3,3)
-myParams
+#myParams <- addParameters(.5,.5,.5,1,3,3)
+#myParams
+
+# if (r > 1 || r <= 0){ stop("Incorrect r, it must be between 0 and 1")}
+# if (sum(tau)/LG != 1) {stop(sprintf("Incorrect tau, the sum of its component divided by %d must be 1", LG))}
+# if (sum(phi)/LP != 1) {stop(sprintf("Incorrect phi, the sum of its component divided by %d must be 1", LP))}
+# if (eta > 1 || eta < 0){ stop("Incorrect eta, it must be between 0 and 1")}
+
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
-myWM <- createWalkMatrix(inputFile, myParams, numCores)
+myWM <- createWalkMatrix(inputFile, numCores)
 #myWM
 
 

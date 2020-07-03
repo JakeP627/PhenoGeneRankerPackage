@@ -19,58 +19,43 @@ read.settings <- function(input.file){
     LG=LG,
     LP=LP)
 }
-read.network.layers <- function(filesDF, Parameters_File, Layers){
+read.network.layers <- function(filesDF){
   # read the gene layer names
-  LayerNames <- filesDF$layer_name[filesDF$type%in%c("gene", "phenotype", "bipartite")]
-  #LayerNames <- filesDF$type[filesDF$type%in%c("gene", "phenotype", "bipartite")]
-  
-  NetworkLayers <- vector("list",length(LayerNames))
-
+  filesDF <- filesDF[filesDF$type%in%c("gene", "phenotype", "bipartite"),]
+  NetworkLayers <- vector("list",nrow(filesDF))
   j <- 1
-  for(i in LayerNames){
-    NetworkLayers[[j]][["DF"]] <-  read.table(filesDF$file_name[filesDF$layer_name==i],
-                                              sep="\t", header=TRUE, colClasses = c("character", "character", "numeric"))
-    NetworkLayers[[j]][["type"]] <- filesDF$type[filesDF$layer_name==i]
-
-    # if (NetworkLayers[[j]][["type"]] != "bipartite"){
-    #   check.network.weight.range(NetworkLayers[[j]][["DF"]], i)
-    # }
+  for(f in filesDF$file_name){
+    NetworkLayers[[j]][["DF"]] <-  read.table(f, header=TRUE, sep="\t", stringsAsFactors = FALSE)
+    NetworkLayers[[j]][["type"]] <- filesDF$type[j]
+    
     NetworkLayers[[j]][["graph"]]  <- graph.data.frame(NetworkLayers[[j]][["DF"]], directed = FALSE)
-
-    NetworkLayers[[j]][["layer_type"]] <- filesDF$layer_type[filesDF$layer_name==i]
-    NetworkLayers[[j]][["name"]] <- i
-    #ind <- which(Layers[["layer_type"]]==NetworkLayers[[j]][["layer_type"]])
-    # count the # of layers into  Layers[["count"]]
-    #Layers[["count"]][ind] <- Layers[["count"]][ind] + 1
-
+    
+    NetworkLayers[[j]][["name"]] <- f
     j <- j+1
   }
-
+  
   gene_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "gene")
-  pheno_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "pheno")
-
-
-
+  phenotype_pool_nodes_sorted <- generate.pool.nodes(NetworkLayers, type = "phenotype")
+  
+  
   idx <- which(lapply(NetworkLayers, `[[`, "type") == "gene")
   for(i in idx){
     NetworkLayers[[i]][["graph"]] <- add.missing.nodes.to.graph(NetworkLayers[[i]][["graph"]],
-                                                                "gene", gene_pool_nodes_sorted)
+                                                                "gene", gene_pool_nodes_sorted)  
   }
-
-  idx <- which(lapply(NetworkLayers, `[[`, "type") == "pheno")
+  
+  idx <- which(lapply(NetworkLayers, `[[`, "type") == "phenotype")
   for(i in idx){
     NetworkLayers[[i]][["graph"]] <- add.missing.nodes.to.graph(NetworkLayers[[i]][["graph"]],
-                                                                "pheno", pheno_pool_nodes_sorted)
-  }
-
+                                                                "phenotype", phenotype_pool_nodes_sorted)  
+  }  
+  
   output=list(
     NetworkLayers=NetworkLayers,
-    Layers=Layers,
     gene_pool_nodes_sorted=gene_pool_nodes_sorted,
-    pheno_pool_nodes_sorted=pheno_pool_nodes_sorted)
+    phenotype_pool_nodes_sorted=phenotype_pool_nodes_sorted)    
   return(output)
 }
-
 
 read.seeds <- function(fileName, gene_pool_nodes_sorted, pheno_pool_nodes_sorted){
   AllSeeds <- read.csv(fileName, header=FALSE, sep="\t", stringsAsFactors = FALSE)
@@ -98,41 +83,27 @@ add.missing.nodes.to.graph <- function(g, type, pool_nodes_sorted){
 
 #' This method allows you to import all the parameters that you need for use with ease of use for the other methods.
 #'
-#' @param r This is the global restart probability. It has a range of 0 to 1.
 #' @param delta This is the probability of jumping between gene layers. It has a range of 0 to 1.
 #' @param zeta This is the probability of jumping between gene layers. It has a range of 0 to 1.
-#' @param tau This is the Gene Layers Restart Probability. It is a 3 digit vector for (PPI, PATH, COEX) that adds up to 1.
-#' @param phi This is the Phenotype Layers Restart Probability. It si a 3 digit cevtor for (Genotype, EL, LTSS) that adds up to 1.
 #' @param lambda This is the Inter Network Jump Probability. It has a range of 0 to 1.
-#' @param eta This is the networks restart probability. It has a range from 0 to 1.
 #' @param weight This is the weight given to the matrix. it has a range from 0 to 1.
-#' @param LG This is the number of genes that will be used.
-#' @param LP This is the number of phenotypes that will be used.
 #'
 #' @return This returns a list of the parameters.
 #' @export
 #'
 #' @examples
-addParameters <- function(r, delta, zeta, tau, phi, lambda, eta, weight, LG, LP){
-
-  if (r > 1 || r <= 0){ stop("Incorrect r, it must be between 0 and 1")}
+addParameters <- function(delta, zeta, lambda, weight){
 
   if (delta > 1 || delta< 0){ stop("Incorrect delta, it must be between 0 and 1")}
 
   if (zeta > 1 || zeta < 0){ stop("Incorrect zeta, it must be between 0 and 1")}
 
-  if (sum(tau)/LG != 1) {stop(sprintf("Incorrect tau, the sum of its component divided by %d must be 1", LG))}
-
-  if (sum(phi)/LP != 1) {stop(sprintf("Incorrect phi, the sum of its component divided by %d must be 1", LP))}
-
   if (lambda > 1 || lambda < 0){ stop("Incorrect lambda, it must be between 0 and 1")}
-
-  if (eta > 1 || eta < 0){ stop("Incorrect eta, it must be between 0 and 1")}
 
   if (weight != 1 & weight != 0){ stop("Incorrect weighted, it must be either 0 or 1")}
 
-  parameters <- list(r, delta, zeta, tau, phi, lambda, eta, weight)
-  names(parameters) <- c("r", "delta", "zeta", "tau", "phi", "lambda", "eta", "weighted")
+  parameters <- list(delta, zeta, lambda, weight)
+  names(parameters) <- c("delta", "zeta", "lambda", "weighted")
   return(parameters)
 }
 check.seeds <- function(Seeds, All_genes,All_Phenotypes){
@@ -606,9 +577,32 @@ geometric.mean <- function(Scores, L, N) {
 
   return(FinalScore)
 }
-randomWalkRestarts <- function(Walk_Matrix, r, Seeds_Score){
+
+#' Title
+#'
+#' @param Walk_Matrix 
+#' @param GeneSeeds 
+#' @param PhenoSeeds 
+#' @param eta 
+#' @param LG 
+#' @param LP 
+#' @param tau 
+#' @param phi 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+randomWalkRestarts <- function(Walk_Matrix, GeneSeeds, PhenoSeeds, LG, LP, tau=FALSE, phi=FALSE, eta=0.5){
   ### We define the threshold and the number maximum of iterations for the randon walker.
-  Seeds_Score <- get.seed.scores(GeneSeeds,PhenoSeeds, Parameters$eta, LG, LP, Parameters$tau/LG, Parameters$phi/LP)
+  if(tau==FALSE){
+    tau <- rep(1,LG)
+  }
+  if(phi==FALSE){
+    phi <- rep(1,LG)
+  }
+    
+  Seeds_Score <- get.seed.scores(GeneSeeds,PhenoSeeds, eta, LG, LP, Parameters$tau/LG, Parameters$phi/LP)
   Threeshold <- 1e-10
   NetworkSize <- ncol(Walk_Matrix)
 
@@ -674,28 +668,28 @@ get.WalkMatrixID <- function(filesDF){
 #' bipartite matrixes, and suprabipartite matrixes.These are combined to make transition and
 #' transistion multiplex networks. A multiplex heterogeneous network is created by
 #' combining the transition and transition multiplex networks.
-#' That network then gets saved to an RDA file
+#' That network then gets saved to a list
 #'
 #' @param inputFileName name of the txt file that contains the gene and phenotype data.
 #' @param numCores number of cores used for parallel processing.
 #'     - recommended to use detectCores() method from the parallel package.
 #'
-#' @return ID of WalkMatrix File, the RDA file is saved to your files.
+#' @return This returns a walk matrix as a list.
 #' @export
 #'
 #' @examples
-createWalkMatrix <- function(inputFileName, params, numCores){
+createWalkMatrix <- function(inputFileName, numCores, delta=0.5, zeta=0.5, lambda=0.5, weight=1){
   network_range <<- c(0.001, 1)
   global_t1 <- Sys.time()
   t1 <- Sys.time()
   Settings <- read.settings(inputFileName)
-  Parameters <- params
+  Parameters <- addParameters(delta, zeta, lambda, weight)
   FilesDF <- Settings$FilesDF
   LG <- Settings$LG
   LP <- Settings$LP
 
   cat("Creating Walk Matrix For: ", paste0(FilesDF$layer_name[FilesDF$type%in%c("gene", "pheno", "bipartite")], collapse = ","), "\n")
-  FullNet <- read.network.layers(FilesDF, Parameters, Settings$Layers)
+  FullNet <- read.network.layers(FilesDF)
   Layers <- FullNet$Layers
   gene_pool_nodes_sorted <- FullNet$gene_pool_nodes_sorted
   pheno_pool_nodes_sorted <- FullNet$pheno_pool_nodes_sorted
