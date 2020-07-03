@@ -44,7 +44,10 @@ numCores
 # if (eta > 1 || eta < 0){ stop("Incorrect eta, it must be between 0 and 1")}
 
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
+source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
 myWM <- createWalkMatrix(inputFile, numCores)
+RWR <- randomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c())
+#length(RWR)
 #myWM
 
 

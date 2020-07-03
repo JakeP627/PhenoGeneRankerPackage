@@ -909,7 +909,7 @@ generate.random.seed.vector <- function(output_dir, WM_ID, GeneSeeds, GeneConnec
 #' @export
 #'
 #' @examples
-calculate.p_values <- function(RWGeneRanks, Rand_Seed_Gene_Rank, output_dir, no.cores=15){
+calculate.p_values <- function(RWGeneRanks, Rand_Seed_Gene_Rank, no.cores){
   #t <- Sys.time()
   S <- ncol(Rand_Seed_Gene_Rank)/3
   cl <- makeCluster(no.cores)
