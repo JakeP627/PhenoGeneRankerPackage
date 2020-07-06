@@ -594,7 +594,7 @@ geometric.mean <- function(Scores, L, N) {
 #' @export
 #'
 #' @examples
-randomWalkRestarts <- function(Walk_Matrix, GeneSeeds, PhenoSeeds, generatePValue=TRUE, numCores=4, r=0.7, eta=0.5){
+randomWalkRestarts <- function(Walk_Matrix, GeneSeeds, PhenoSeeds, generatePValue=TRUE, numCores=1, r=0.7, eta=0.5){
   ### We define the threshold and the number maximum of iterations for the randon walker.
   if(!exists("tau")){
     tau <- rep(1,Walk_Matrix[["LG"]])
@@ -658,7 +658,7 @@ randomWalkRestarts <- function(Walk_Matrix, GeneSeeds, PhenoSeeds, generatePValu
     
     
     # cropped version will have gene, rank, type, p100 columns
-    dfRankCropped <- dfRank[, c(1:4, (ncol(dfRank)-2) )]
+    dfRankCropped <- dfRank[, c(1:2, (ncol(dfRank)-2) )]
     return(dfRankCropped)
   }
   else{
@@ -667,7 +667,7 @@ randomWalkRestarts <- function(Walk_Matrix, GeneSeeds, PhenoSeeds, generatePValu
 }
 Random_Walk_Restarts_Single <- function(Walk_Matrix, r, Seeds_Score){
   ### We define the threshold and the number maximum of iterations for the randon walker.
-  Seeds_Score <- get.seed.scores(GeneSeeds,CultSeeds, Parameters$eta, LG, LC, Parameters$tau/LG, Parameters$phi/LC)
+  #Seeds_Score <- get.seed.scores(GeneSeeds,CultSeeds, Parameters$eta, LG, LC, Parameters$tau/LG, Parameters$phi/LC)
   Threeshold <- 1e-10
   NetworkSize <- ncol(Walk_Matrix)
   
@@ -852,7 +852,7 @@ createWalkMatrix <- function(inputFileName, numCores, delta=0.5, zeta=0.5, lambd
                   genes = gene_pool_nodes_sorted,
                   phenotypes = phenotype_pool_nodes_sorted,
                   gene_connectivity = Connectivity[["gene"]],
-                  phenotype_connectivity = Connectivity[["phenotype"]],
+                  phenotype_connectivity = Connectivity[["pheno"]],
                   LG = LG,
                   LP = LP,
                   N = N,
@@ -1079,14 +1079,14 @@ generate.random.seed.vector <- function(WM, GeneSeeds, PhenoSeeds, S=1000, no.gr
   #RandomSeeds <- list()
   RandomGeneSeeds <- list()
   if(length(GeneSeeds)!=0){
-    RandomGeneSeeds <- generate.random.seeds(GeneSeeds, WM[["gene_connectivity"]], S, no.groups.gene, TRUE)
+    RandomGeneSeeds <- generate.random.seeds(GeneSeeds, GeneConnectivity, S, no.groups.gene, TRUE)
     if(length(GeneSeeds)!=1 && any(duplicated(RandomGeneSeeds[1:S]))) warning("WARN: Duplicated random 'gene' seeds generated!")
     #RandomSeeds <- RandomGeneSeeds
   }
 
   RandomPhenoSeeds <- list()
   if(length(PhenoSeeds)!=0){
-    RandomPhenoSeeds <- generate.random.seeds(PhenoSeeds, WM[["phenotype_connectivity"]], S, no.groups.pheno, TRUE)
+    RandomPhenoSeeds <- generate.random.seeds(PhenoSeeds, PhenoConnectivity, S, no.groups.pheno, TRUE)
     if(length(PhenoSeeds)!=1 && any(duplicated(RandomPhenoSeeds[1:S]))) warning("WARN: Duplicated random 'phenotype' seeds generated!")
     #RandomSeeds <- RandomGeneSeeds
   }
@@ -1162,10 +1162,10 @@ randomWalkRestartsBatch <- function(Walk_Matrix, GeneSeedsList, PhenoSeedsList, 
   cl <- makeCluster(no.cores)
   registerDoParallel(cl)
   seedsLength <- ifelse(length(GeneSeedsList)!=0, length(GeneSeedsList), length(PhenoSeedsList))
-  #funcs <- c('get.seed.scores', 'randomWalkRestarts', 'rank_genes')
+  funcs <- c('get.seed.scores', 'Random_Walk_Restarts_Single', 'rank_genes', 'geometric.mean')
 
-  # Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.export=funcs,.packages=c('Matrix')) %dopar% {
-  Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.packages=c('Matrix')) %dopar% {
+  Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.export=funcs,.packages=c('Matrix')) %dopar% {
+  #Rand_Seed_Gene_Rank <- foreach (i=1:seedsLength,.combine=cbind,.packages=c('Matrix')) %dopar% {
     if (length(GeneSeedsList)!=0 && length(PhenoSeedsList)!=0){
       Seeds_Score <- get.seed.scores(GeneSeedsList[[i]], PhenoSeedsList[[i]], eta, LG, LP, tau, phi )
     }else if(length(GeneSeedsList)!=0){

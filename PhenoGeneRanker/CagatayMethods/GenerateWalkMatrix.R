@@ -18,7 +18,7 @@ setwd(baseDir)
 #source("R/github/PhenoGeneRankerFunctions.R")
 #source("C:/Users/bigjp/OneDrive/Desktop/PhenoGeneRanker/PhenoGeneRankerFunctions.R")
 #source("C:/Users/bigjp/OneDrive/Desktop/TEST_PGR_FILES/PhenoGeneRankerFunctions.R")
-source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
+#source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctionsCorrected.R")
 #source("R/github/Utils.R")
 #source("C:/Users/bigjp/Desktop/TEST_PGR_FILES/Utils.R")
 
