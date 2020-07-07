@@ -45,8 +45,8 @@ numCores
 
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
 source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
-myWM <- createWalkMatrix(inputFile, numCores)
-RWR <- randomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c())
+myWM <- CreateWalkMatrix(inputFile, numCores)
+RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c(),FALSE, 12)
 #length(RWR)
 #myWM
 

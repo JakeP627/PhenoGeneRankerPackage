@@ -1,7 +1,5 @@
 #exportPattern("^[[:alpha:]]+")
-export('createWalkMatrix')
-export('randomWalkRestarts')
-export('calculatePvalues')
-#importFrom("stats", "median")
-#importFrom("utils", "read.csv", "read.table", "write.table")
+export('CreateWalkMatrix')
+export('RandomWalkRestarts')
+
 

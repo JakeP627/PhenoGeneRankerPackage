@@ -12,5 +12,6 @@ Description: This package is a gene/disease prioritization tool that utilizes
 License: Creative Commons Attribution 4.0 International License
 Imports: igraph, Matrix, foreach, doParallel, dplyr, rlang
 Suggests: knitr
+Encoding: UTF-8
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
