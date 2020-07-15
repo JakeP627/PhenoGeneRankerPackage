@@ -24,8 +24,7 @@ library(PhenoGeneRankerPackage)
   * [Using the Methods](#Using-the-Methods)
     *[CreateWalkMatrix](#CreateWalkMatrix)
     *[RandomWalkRestarts](#RandomWalkRestarts)
-  * [Example Workflow Step 1](#Example-Workflow-Step-1)
-  * [Combined Example Workflow](#Combined-Example-Workflow)
+  * [Example Workflow](#Example-Workflow)
   * [Summary](#Summary)
   * [Acknowledgements](#Acknowledgements)
   
@@ -67,9 +66,8 @@ This method runs the random walk with restarts on the provided walkmatrix transi
 #RandomWalkRestarts(walkMatrix, c('gene1', 'gene2'), c(), TRUE)
 ```
 
-## <a id = "Example-Workflow-Step-1"></a> Example Workflow Step 1
+## <a id = "Example-Workflow"></a> Example Workflow
 
-## <a id = "Combined-Example-Workflow"></a> Combined Example Workflow
 
 ## <a id = "Summary"></a> Summary
 

@@ -23,7 +23,7 @@ setwd(baseDir)
 #source("C:/Users/bigjp/Desktop/TEST_PGR_FILES/Utils.R")
 
 #inputDir <- paste0("datasets/networks/", testDir)
-inputDir <- paste0("datasets/networks/", testDir)
+inputDir <- paste0("CagatayMethods/datasets/networks/", testDir)
 outputDir <- paste0("datasets/output/", testDir)
 setwd(paste0(baseDir, inputDir))
 inputFile <- "input_files_het_par_1.txt"
@@ -44,6 +44,7 @@ numCores
 # if (eta > 1 || eta < 0){ stop("Incorrect eta, it must be between 0 and 1")}
 
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
+inputFile <- "input_files_het_par_1.txt"
 source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
 myWM <- CreateWalkMatrix(inputFile, numCores)
 RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c(), TRUE, 12)

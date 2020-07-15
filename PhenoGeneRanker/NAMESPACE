@@ -1,5 +1,4 @@
-#exportPattern("^[[:alpha:]]+")
 export('CreateWalkMatrix')
 export('RandomWalkRestarts')
 
-
+import('igraph', 'Matrix', 'foreach', 'doParallel', 'dplyr', 'rlang')

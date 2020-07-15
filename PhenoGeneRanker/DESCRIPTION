@@ -1,9 +1,9 @@
 Package: PhenoGeneRankerPackage
 Type: Package
-Title: PhenoGeneRanker, gene and disease prioritization tool 
+Title: PhenoGeneRanker: A gene and phenotype prioritization tool 
 Version: 0.99.0
 Author: Cagatay Dursun, Serdar Bozdag
-Maintainer: Cagatay Dursun <cagatay.dursun@marquette.edu>,Jake Petrie <jacob.m.petrie@marquette.edu>
+Maintainer: Cagatay Dursun <cagatay.dursun@marquette.edu>
 Description: This package is a gene/disease prioritization tool that utilizes 
     heterogeneous gene disease network. PhenoGeneRanker allows multi-layer gene
     and disease networks. It also calculates empirical p-values of gene ranking
