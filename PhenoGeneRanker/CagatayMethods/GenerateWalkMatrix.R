@@ -9,7 +9,7 @@ BiocManager::install()
 #baseDir <- "/users/cdursun/rice/"
 #baseDir <- "C:/Users/bigjp/OneDrive/Desktop/TEST_PGR_FILES/"
 #baseDir <- "C:/Users/bigjp/Desktop/TEST_PGR_FILES/"
-baseDir <- "C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/CagatayMethods/"
+baseDir <- "C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/"
 
 #testDir <- "github_test/"
 testDir <- ""
@@ -46,7 +46,7 @@ numCores
 #myWM <- createWalkMatrixUpdated(inputFile, numCores)
 source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
 myWM <- CreateWalkMatrix(inputFile, numCores)
-RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c(),FALSE, 12)
+RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c(), TRUE, 12)
 #length(RWR)
 #myWM
 
