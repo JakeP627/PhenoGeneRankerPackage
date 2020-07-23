@@ -47,7 +47,7 @@ numCores
 inputFile <- "input_files_het_par_1.txt"
 source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
 myWM <- CreateWalkMatrix(inputFile, numCores)
-RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750","LOC_Os09g29820"),c(), TRUE, 12)
+RWR <- RandomWalkRestarts(myWM, c("LOC_Os06g39750", "LOC_Os01g01290"), c(), TRUE, 12)
 #length(RWR)
 #myWM
 

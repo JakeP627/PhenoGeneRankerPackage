@@ -4,20 +4,30 @@ library(testthat)
 library(Matrix)
 
 # This is required to run using terminal @linux server before Utils.R
-if (strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]=="R") setwd("..")
-context("Matrices Computation")
-source("R/Utils_r1.R")
-source("R/RWFunctions_r2.R")
+# if (strsplit(getwd(),"/")[[1]][length(strsplit(getwd(),"/")[[1]])]=="R") setwd("..")
+# context("Matrices Computation")
+# source("R/Utils_r1.R")
+#source("R/RWFunctions_r2.R")
+source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/R/PhenoGeneRankerFunctions.R")
+source("C:/Users/bigjp/OneDrive/Documents/PhenoGeneRankerPackage/PhenoGeneRanker/testsTestGeneratedWM_r2.R")
+
+#GeneLayer1.txt, GeneLayer2.txt, GenePhenotype.txt, PhenotypeLAyer1.txt, PhenotypeLayer2.txt
+dfInputFile <- data.frame(type=c("gene", "gene","phenotype","phenotype","bipartite"),
+                          file_name=c("GeneLayer1.txt", "GeneLayer1.txt", "PhenotypeLayer1.txt",
+                                      "PhenotypeLayer2.txt", "GenePhenotype.txt"), stringAsFactor=FALSE)
+write.table(dfInputFile, "input_file_name.txt",
+            sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+
+# isDeleteFiles <- FALSE
+# 
+# if (isDeleteFiles){
+#   testFiles <- paste0(network_dir, c("Expr.txt", "PPI.txt", "GeneCult.txt", "EL.txt", "LTSS.txt"))
+#   # remove all previously created files
+#   do.call(file.remove, list(testFiles[do.call(file.exists, list(testFiles))]))
+# }
+tests <-create.extended.test.networks()
 
 
-
-isDeleteFiles <- FALSE
-
-if (isDeleteFiles){
-  testFiles <- paste0(network_dir, c("Expr.txt", "PPI.txt", "GeneCult.txt", "EL.txt", "LTSS.txt"))
-  # remove all previously created files
-  do.call(file.remove, list(testFiles[do.call(file.exists, list(testFiles))]))
-}
 
 create.base.test.networks <- function(){
   
@@ -106,10 +116,14 @@ create.base.test.networks <- function(){
   print("Expected matrix for BASE test is given below: ")
   printSpMatrix2(WMExpected, col.names = TRUE)  
   
-  saveit( WMExpected=WMExpected, 
-          SupraAdjacencyMatrixExpected=SupraAdjacencyMatrixExpected,
-          SupraAdjacencyMatrixNormExpected=SupraAdjacencyMatrixNormExpected,
-         file = paste0(network_dir, "WMExpected.rda"))
+  # saveit( WMExpected=WMExpected, 
+  #         SupraAdjacencyMatrixExpected=SupraAdjacencyMatrixExpected,
+  #         SupraAdjacencyMatrixNormExpected=SupraAdjacencyMatrixNormExpected,
+  #        file = paste0(network_dir, "WMExpected.rda"))
+  wm <- list(WMExpected=WMExpected, 
+             SupraAdjacencyMatrixExpected=SupraAdjacencyMatrixExpected,
+             SupraAdjacencyMatrixNormExpected=SupraAdjacencyMatrixNormExpected)
+  return(wm)
 }
 create.extended.test.networks <- function(){
   ## Multiplex
@@ -124,7 +138,7 @@ create.extended.test.networks <- function(){
   saveRDS(geneDF2, file=paste0(network_dir, "PPI.rds"))
   
   ## Multiplex Cult
-  cultGRF1 <- igraph::graph(c("c1","c2","c1","c3","c2","c3"), directed = FALSE)
+  cultGRF1 <- igraph::graph(c("p1","p2","p1","p3","p2","p3"), directed = FALSE)
   cultDF1 <- igraph::as_data_frame(cultGRF1)
   cultDF1$weight <- 1
   saveRDS(cultDF1, file=paste0(network_dir, "EL.rds"))
@@ -169,18 +183,19 @@ create.extended.test.networks <- function(){
                             "c1_1","c2_1","c3_1","c4_1","c5_1", "c1_2","c2_2","c3_2","c4_2","c5_2")
   WMExtExpected <- as(WMExtExpected, "dgCMatrix")
   
-  saveit( WMExtExpected=WMExtExpected,
-          file = paste0(network_dir, "WMExtExpected.rda"))
+  # saveit( WMExtExpected=WMExtExpected,
+  #         file = paste0(network_dir, "WMExtExpected.rda"))
+  return(WMExtExpected)
 }
-test.equality <- function(WM_ID, isExtended=FALSE){
-
-  if (!isExtended){
-    load(paste0(network_dir, "WMExpected.rda"))
-  }else{
-    load(paste0(network_dir, "WMExtExpected.rda"))
-  } 
+test.equality <- function(WM, isExtended=FALSE){
+# 
+#   if (!isExtended){
+#     load(paste0(network_dir, "WMExpected.rda"))
+#   }else{
+#     load(paste0(network_dir, "WMExtExpected.rda"))
+#   } 
   
-  load(paste0(network_dir, "WM_", WM_ID, ".rda"))
+  #load(paste0(network_dir, "WM_", WM_ID, ".rda"))
 
   print("Col sums for WM")
   print(colSums(WM))  

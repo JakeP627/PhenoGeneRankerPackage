@@ -24,7 +24,7 @@ CreateWalkMatrix(
 \item{lambda}{This is the Inter-Network Jump Probability. It has a range of 0 to 1. It has a default value of 0.5.}
 }
 \value{
-This returns a list that contains a walk matrix, list of sorted genes by name in the multiplex heterogeneous network, list of phenotypes sorted by name in the multiplex heterogeneous networkpool nodes, the degree of all genes in the multiplex heterogeneous network to be used for p-value generation in randomWalkRestarts method, the degree of all genes/phenotypes in the multiplex heterogeneous network to be used for p-value generation in randomWalkRestarts method, the number of gene layer files there are, the number of phenotype layer files there are, the number of gene pool nodes, and the number of phenotype nodes.
+This returns a list that contains a walk matrix, list of sorted genes by name in the multiplex heterogeneous network, list of phenotypes sorted by name in the multiplex heterogeneous networkpool nodes, the degree of all genes in the multiplex heterogeneous network to be used for p-value generation in randomWalkRestarts method, the degree of all phenotypes in the multiplex heterogeneous network to be used for p-value generation in randomWalkRestarts method, the number of gene layer files there are, the number of phenotype layer files there are, the number of gene pool nodes, and the number of phenotype nodes.
 }
 \description{
 Generates a Walk matrix from Gene and Phenotype data.

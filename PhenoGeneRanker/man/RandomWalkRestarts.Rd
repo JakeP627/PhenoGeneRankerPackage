@@ -45,7 +45,7 @@ If you want to have each file equally weighted, you do not need to input this ve
 \value{
 If the parameter generatePValue is TRUE, then this method returns a data frame with the top 100 ranked p-values.
 There are three columns for the gene name, score, p-value. If generatePValue is FALSE, then it creates a data frame of
-all of the genes ranked. It has a column of the rank, gene name, and and steady state scores for each gene or phenotype.
+all of the genes ranked. It has a column of the rank, gene name, and steady state scores for each gene or phenotype.
 }
 \description{
 This method runs the random walk with restarts on the provided walkmatrix transition matrix of multiplex heterogeneous networks. 

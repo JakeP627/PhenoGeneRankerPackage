@@ -1,0 +1,6 @@
+type	file_name	stringAsFactor
+gene	GeneLayer1.txt	FALSE
+gene	GeneLayer1.txt	FALSE
+phenotype	PhenotypeLayer1.txt	FALSE
+phenotype	PhenotypeLayer2.txt	FALSE
+bipartite	GenePhenotype.txt	FALSE
